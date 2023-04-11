@@ -148,12 +148,14 @@ ACCOUNT_USERNAME_REQUIRED = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'my_social_network',
-        'USER': 'your_db_user',
-        'PASSWORD': 'your_db_password',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '30011',
     }
 }
 
 AUTH_USER_MODEL = 'users.User'
+
+DEBUG = True
