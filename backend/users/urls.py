@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import login_view
 from .views import (
     UserListCreateView,
     UserRetrieveUpdateDestroyView,
@@ -29,4 +30,5 @@ urlpatterns = [
     path('chats/<int:pk>/', ChatRetrieveUpdateDestroyView.as_view(), name='chat-retrieve-update-destroy'),
     path('messages/', MessageListCreateView.as_view(), name='message-list-create'),
     path('messages/<int:pk>/', MessageRetrieveUpdateDestroyView.as_view(), name='message-retrieve-update-destroy'),
+    path("auth/login/", login_view, name="login"),
 ]

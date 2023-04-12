@@ -1,14 +1,19 @@
-import React from "react";
-import "./App.css";
-import RegisterForm from "./components/RegisterForm";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import RegisterForm from './components/RegisterForm';
+import SignInForm from './components/SignInForm';
+import Feed from './components/Feed';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <RegisterForm />
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<SignInForm />} />
+        <Route path="/signin" element={<SignInForm />} />
+        <Route path="/register" element={<RegisterForm />} />
+        <Route path="/feed" element={<Feed />} />
+      </Routes>
+    </Router>
   );
 }
 

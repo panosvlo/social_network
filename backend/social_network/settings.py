@@ -159,3 +159,9 @@ DATABASES = {
 AUTH_USER_MODEL = 'users.User'
 
 DEBUG = True
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+CORS_ALLOW_CREDENTIALS = True
