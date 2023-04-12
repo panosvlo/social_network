@@ -35,25 +35,25 @@ const SignInForm = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-    const handleSubmit = async (event) => {
-      event.preventDefault();
-      try {
-        const response = await api.post('/auth/login/', {
-          username: username,
-          password: password,
-        });
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await api.post("/auth/login/", {
+        username: username,
+        password: password,
+      });
 
-        if (response.status === 200) {
-          localStorage.setItem("access_token", response.data.access);
-          history.push("/feed");
-        } else {
-          alert("Error signing in.");
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Error signing in.");
+      if (response.status === 200) {
+        localStorage.setItem("access_token", response.data.access);
+        navigate("/feed");
+      } else {
+        setError("Error signing in.");
       }
-    };
+    } catch (error) {
+      console.error(error);
+      setError(error.response?.data?.message || "Error signing in.");
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
@@ -81,7 +81,10 @@ const SignInForm = () => {
       </button>
       {error && <p className="error-message">{error}</p>}
       <p>
-        Don't have an account? <Link to="/register" style={styles.registerLink}>Register</Link>
+        Don't have an account?{" "}
+        <Link to="/register" style={styles.registerLink}>
+          Register
+        </Link>
       </p>
     </form>
   );
