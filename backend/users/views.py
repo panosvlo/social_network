@@ -1,5 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Post, Like, Comment, Chat, Message, Topic
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
@@ -129,7 +130,9 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return JsonResponse({"message": "Logged in successfully."}, status=200)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            return JsonResponse({"message": "Logged in successfully.", "access": access_token}, status=200)
         else:
             print("User authentication failed")
             return JsonResponse({"message": "Invalid credentials."}, status=401)

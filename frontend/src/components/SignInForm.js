@@ -45,6 +45,7 @@ const SignInForm = () => {
 
       if (response.status === 200) {
         localStorage.setItem("access_token", response.data.access);
+        console.log("Response data:", response.data);
         navigate("/feed");
       } else {
         setError("Error signing in.");
