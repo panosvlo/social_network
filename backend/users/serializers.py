@@ -18,10 +18,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    topic_name = serializers.CharField(write_only=True, required=True)
+    topic = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'content', 'created_at', 'topic')
+        fields = ('id', 'user', 'content', 'created_at', 'topic', 'topic_name')
+
+    def create(self, validated_data):
+        topic_name = validated_data.pop('topic_name')
+        topic, _ = Topic.objects.get_or_create(name=topic_name)
+        post = Post.objects.create(topic=topic, **validated_data)
+        return post
 
 
 class LikeSerializer(serializers.ModelSerializer):

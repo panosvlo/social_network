@@ -9,7 +9,8 @@ class User(AbstractUser):
 
 
 class Topic(models.Model):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField(default="null")
 
 
 class Post(models.Model):
