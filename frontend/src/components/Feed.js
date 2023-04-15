@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchSubscribedPosts();
+    const checkAuthentication = async () => {
+      const token = localStorage.getItem('access_token');
+      console.log("Access token:", token);
+      if (!token) {
+        navigate('/signin');
+      } else {
+        fetchSubscribedPosts();
+      }
+    };
+
+    checkAuthentication();
   }, []);
 
   const fetchSubscribedPosts = async () => {
@@ -26,13 +38,20 @@ const Feed = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <ul>
+        <div>
           {posts.length ? (
-            posts.map((post) => <li key={post.id}>{post.content}</li>)
+            posts.map((post) => (
+              <div key={post.id} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
+                <p>
+                  <strong>{post.user.username}</strong> posted:
+                </p>
+                <p>{post.content}</p>
+              </div>
+            ))
           ) : (
             <p>You are all caught up!</p>
           )}
-        </ul>
+        </div>
       )}
     </div>
   );
