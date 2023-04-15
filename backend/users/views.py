@@ -6,7 +6,12 @@ from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
+from django.shortcuts import get_object_or_404
 from rest_framework import status
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.core import serializers
 from .serializers import (
     UserSerializer,
     PostSerializer,
@@ -51,9 +56,15 @@ class TopicListCreateView(generics.ListCreateAPIView):
 
 
 class PostListCreateView(generics.ListCreateAPIView):
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            subscribed_topics = user.topics_of_interest.all()
+            return Post.objects.filter(topic__in=subscribed_topics).order_by('-created_at')
+        return Post.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -117,6 +128,24 @@ class MessageRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MessageSerializer
 
 
+class SubscribeToTopicView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        topic_name = request.data.get('topic_name')
+        if not topic_name:
+            return JsonResponse({"error": "Topic name is required."}, status=400)
+
+        topic = get_object_or_404(Topic, name=topic_name)
+        user = request.user
+        user.topics_of_interest.add(topic)
+        user.save()
+
+        return JsonResponse({"message": f"Subscribed to {topic_name}"}, status=200)
+
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":
@@ -138,3 +167,11 @@ def login_view(request):
             return JsonResponse({"message": "Invalid credentials."}, status=401)
     else:
         return JsonResponse({"message": "Method not allowed."}, status=405)
+
+
+@login_required
+def subscribed_feed(request):
+    topics = request.user.profile.topics_subscribed.all()
+    posts = Post.objects.filter(topic__in=topics).order_by('-created_at')
+    post_list = serializers.serialize('json', posts)
+    return JsonResponse(post_list, safe=False)

@@ -14,6 +14,8 @@ from .views import (
     ChatRetrieveUpdateDestroyView,
     MessageListCreateView,
     MessageRetrieveUpdateDestroyView,
+    SubscribeToTopicView,
+    subscribed_feed
 )
 
 urlpatterns = [
@@ -31,4 +33,6 @@ urlpatterns = [
     path('messages/', MessageListCreateView.as_view(), name='message-list-create'),
     path('messages/<int:pk>/', MessageRetrieveUpdateDestroyView.as_view(), name='message-retrieve-update-destroy'),
     path("auth/login/", login_view, name="login"),
+    path("subscribe/", SubscribeToTopicView.as_view(), name="subscribe"),
+    path('subscribed_feed/', subscribed_feed, name='subscribed_feed'),
 ]

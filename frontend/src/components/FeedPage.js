@@ -4,6 +4,7 @@ import Followers from './Followers';
 import UserPosts from './UserPosts';
 import CreatePost from './CreatePost';
 import Feed from './Feed';
+import TopicSubscription from "./TopicSubscription";
 
 const FeedPage = () => {
   return (
@@ -13,6 +14,7 @@ const FeedPage = () => {
         <Followers />
         <UserPosts />
         <CreatePost />
+        <TopicSubscription />
       </div>
       <div style={{ flex: 1 }}>
         <Feed />
