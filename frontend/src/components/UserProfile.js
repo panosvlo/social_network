@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import UserPosts from './UserPosts';
 import api from '../services/api';
@@ -11,26 +11,52 @@ function UserProfile() {
   const [showFollowers, setShowFollowers] = useState(false);
   const [following, setFollowing] = useState([]);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-    const handleFollow = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await api.patch(
-          `/users/${userId}/follow/`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (response.status === 200) {
-          console.log(response.data.message);
-        } else {
-          console.error("Error following user");
-        }
-      } catch (error) {
-        console.error(error);
+  useEffect(() => {
+    checkIsFollowing();
+  }, []);
+
+  const checkIsFollowing = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await api.get(`/users/${userId}/is_following/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setIsFollowing(response.data.is_following);
       }
-    };
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+    }
+  };
+
+  const handleFollow = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const endpoint = isFollowing ? "/unfollow/" : "/follow/";
+      const response = await api.patch(
+        `/users/${userId}${endpoint}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        console.log(response.data.message);
+      } else {
+        console.error("Error following/unfollowing user");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
 
   const handleShowFollowers = async () => {
     try {
@@ -87,18 +113,18 @@ function UserProfile() {
       <div>
         {/* Add your user avatar component here */}
       </div>
-      <button onClick={handleFollow}>Follow</button>
-        <button onClick={handleShowFollowers}>Show Followers</button>
-        {showFollowers && (
-          <Modal onClose={handleCloseFollowers}>
-            <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} title="Followers" />
-          </Modal>
-        )}
-        <button onClick={handleShowFollowing}>Show Following</button>
-        {showFollowing && (
-          <Modal onClose={handleCloseFollowing}>
-            <FollowersList followers={following} handleCloseFollowers={handleCloseFollowing} title="Following" />
-          </Modal>
+      <button onClick={handleFollow}>{isFollowing ? 'Unfollow' : 'Follow'}</button>
+      <button onClick={handleShowFollowers}>Show Followers</button>
+      {showFollowers && (
+        <Modal onClose={handleCloseFollowers}>
+          <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} title="Followers" />
+        </Modal>
+      )}
+      <button onClick={handleShowFollowing}>Show Following</button>
+      {showFollowing && (
+        <Modal onClose={handleCloseFollowing}>
+          <FollowersList followers={following} handleCloseFollowers={handleCloseFollowing} title="Following" />
+        </Modal>
         )}
       <UserPosts userId={userId} />
     </div>

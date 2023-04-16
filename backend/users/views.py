@@ -194,6 +194,34 @@ class FollowUserView(generics.UpdateAPIView):
             return JsonResponse({"message": "You cannot follow yourself."}, status=400)
 
 
+class IsFollowingUserView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        user_to_check = self.get_object()
+        current_user = request.user
+        is_following = current_user.following.filter(id=user_to_check.id).exists()
+        return JsonResponse({"is_following": is_following}, status=200)
+
+
+class UnfollowUserView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        user_to_unfollow = self.get_object()
+        current_user = request.user
+        if user_to_unfollow != current_user:
+            current_user.following.remove(user_to_unfollow)
+            current_user.save()
+            return JsonResponse({"message": f"Unfollowed {user_to_unfollow.username}"}, status=200)
+        else:
+            return JsonResponse({"message": "You cannot unfollow yourself."}, status=400)
+
+
 class UserFollowersListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
