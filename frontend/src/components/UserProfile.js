@@ -10,6 +10,8 @@ function UserProfile() {
   const { userId } = useParams();
   const [followers, setFollowers] = useState([]);
   const [showFollowers, setShowFollowers] = useState(false);
+  const [following, setFollowing] = useState([]);
+  const [showFollowing, setShowFollowing] = useState(false);
 
     const handleFollow = async () => {
       try {
@@ -51,8 +53,33 @@ function UserProfile() {
     }
   };
 
+    const handleShowFollowing = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await api.get(
+          `/users/${userId}/following/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.status === 200) {
+          setFollowing(response.data);
+          setShowFollowing(true);
+        } else {
+          console.error("Error fetching following");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+
   const handleCloseFollowers = () => {
     setShowFollowers(false);
+  };
+
+  const handleCloseFollowing = () => {
+    setShowFollowing(false);
   };
 
   return (
@@ -66,6 +93,12 @@ function UserProfile() {
       {showFollowers && (
         <Modal onClose={handleCloseFollowers}>
           <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} />
+        </Modal>
+      )}
+      <button onClick={handleShowFollowing}>Show Following</button>
+      {showFollowing && (
+        <Modal onClose={handleCloseFollowing}>
+          <FollowersList followers={following} handleCloseFollowers={handleCloseFollowing} />
         </Modal>
       )}
       <UserPosts userId={userId} />
