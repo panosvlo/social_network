@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import UserPosts from './UserPosts';
-import Followers from './Followers';
 import api from '../services/api';
 import FollowersList from './FollowersList';
 import Modal from './Modal';
@@ -89,20 +88,19 @@ function UserProfile() {
         {/* Add your user avatar component here */}
       </div>
       <button onClick={handleFollow}>Follow</button>
-      <button onClick={handleShowFollowers}>Show Followers</button>
-      {showFollowers && (
-        <Modal onClose={handleCloseFollowers}>
-          <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} />
-        </Modal>
-      )}
-      <button onClick={handleShowFollowing}>Show Following</button>
-      {showFollowing && (
-        <Modal onClose={handleCloseFollowing}>
-          <FollowersList followers={following} handleCloseFollowers={handleCloseFollowing} />
-        </Modal>
-      )}
+        <button onClick={handleShowFollowers}>Show Followers</button>
+        {showFollowers && (
+          <Modal onClose={handleCloseFollowers}>
+            <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} title="Followers" />
+          </Modal>
+        )}
+        <button onClick={handleShowFollowing}>Show Following</button>
+        {showFollowing && (
+          <Modal onClose={handleCloseFollowing}>
+            <FollowersList followers={following} handleCloseFollowers={handleCloseFollowing} title="Following" />
+          </Modal>
+        )}
       <UserPosts userId={userId} />
-      <Followers />
     </div>
   );
 }

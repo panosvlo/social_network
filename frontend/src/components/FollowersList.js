@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './FollowersList.css';
 
-const FollowersList = ({ followers, handleCloseFollowers }) => {
+const FollowersList = ({ followers, handleCloseFollowers, title }) => {
   const navigate = useNavigate();
 
   const handleFollowerClick = (followerId) => {
@@ -12,7 +12,7 @@ const FollowersList = ({ followers, handleCloseFollowers }) => {
 
   return (
     <div>
-      <h3>Followers</h3>
+      <h3>{title}</h3>
       <ul>
         {followers.map((follower) => (
           <li key={follower.id} className="follower-item" onClick={() => handleFollowerClick(follower.id)}>

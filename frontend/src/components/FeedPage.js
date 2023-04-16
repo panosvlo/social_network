@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Avatar from './Avatar';
-import Followers from './Followers';
 import UserPosts from './UserPosts';
 import CreatePost from './CreatePost';
 import Feed from './Feed';
@@ -31,7 +30,6 @@ const FeedPage = () => {
       <div style={{ flex: 1 }}>
         <Avatar />
         {currentUserId && <Link to={`/profile/${currentUserId}`}>Go to User Profile</Link>}
-        <Followers />
         <UserPosts />
         <CreatePost />
         <TopicSubscription />
