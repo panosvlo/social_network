@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 from django.core import serializers
 from .serializers import (
     UserSerializer,
@@ -176,6 +176,22 @@ class UserPostsListAPIView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs['pk']
         return Post.objects.filter(user__id=user_id).order_by('-created_at')
+
+
+class FollowUserView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        user_to_follow = self.get_object()
+        current_user = request.user
+        if user_to_follow != current_user:
+            current_user.following.add(user_to_follow)
+            current_user.save()
+            return JsonResponse({"message": f"Following {user_to_follow.username}"}, status=200)
+        else:
+            return JsonResponse({"message": "You cannot follow yourself."}, status=400)
 
 
 @csrf_exempt
