@@ -1,4 +1,5 @@
 from rest_framework import generics
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Post, Like, Comment, Chat, Message, Topic
@@ -144,6 +145,37 @@ class SubscribeToTopicView(generics.UpdateAPIView):
         user.save()
 
         return JsonResponse({"message": f"Subscribed to {topic_name}"}, status=200)
+
+
+class FollowingListAPIView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return user.following.all()
+        return User.objects.none()
+
+
+class UserTopicsListAPIView(generics.ListAPIView):
+    serializer_class = TopicSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return user.topics_of_interest.all()
+        return Topic.objects.none()
+
+
+class UserPostsListAPIView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.kwargs['pk']
+        return Post.objects.filter(user__id=user_id).order_by('-created_at')
 
 
 @csrf_exempt

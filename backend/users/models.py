@@ -6,6 +6,7 @@ from django.conf import settings
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     topics_of_interest = models.ManyToManyField('Topic', related_name='interested_users')
+    following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
 
 
 class Topic(models.Model):

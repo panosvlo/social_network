@@ -15,7 +15,10 @@ from .views import (
     MessageListCreateView,
     MessageRetrieveUpdateDestroyView,
     SubscribeToTopicView,
-    subscribed_feed
+    subscribed_feed,
+    FollowingListAPIView,
+    UserTopicsListAPIView,
+    UserPostsListAPIView,
 )
 
 urlpatterns = [
@@ -35,4 +38,7 @@ urlpatterns = [
     path("auth/login/", login_view, name="login"),
     path("subscribe/", SubscribeToTopicView.as_view(), name="subscribe"),
     path('subscribed_feed/', subscribed_feed, name='subscribed_feed'),
+    path('following/', FollowingListAPIView.as_view(), name='following-list'),
+    path('topics/', UserTopicsListAPIView.as_view(), name='user-topics-list'),
+    path('users/<int:pk>/posts/', UserPostsListAPIView.as_view(), name='user-posts-list'),
 ]

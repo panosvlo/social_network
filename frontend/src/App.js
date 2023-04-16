@@ -4,6 +4,7 @@ import RegisterForm from './components/RegisterForm';
 import SignInForm from './components/SignInForm';
 import Feed from './components/Feed';
 import FeedPage from './components/FeedPage';
+import UserProfile from './components/UserProfile';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/signin" element={<SignInForm />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/feed" element={<FeedPage />} />
+        <Route path="/profile/:userId" element={<UserProfile />} />
       </Routes>
     </Router>
   );
