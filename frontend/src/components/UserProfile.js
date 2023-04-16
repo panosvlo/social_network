@@ -15,7 +15,7 @@ function UserProfile() {
 
   useEffect(() => {
     checkIsFollowing();
-  }, []);
+  }, [userId]);
 
   const checkIsFollowing = async () => {
     try {
@@ -48,6 +48,7 @@ function UserProfile() {
       );
       if (response.status === 200) {
         console.log(response.data.message);
+        setIsFollowing(!isFollowing); // Add this line to update the isFollowing state
       } else {
         console.error("Error following/unfollowing user");
       }
