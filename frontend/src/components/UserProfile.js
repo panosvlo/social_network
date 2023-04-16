@@ -65,7 +65,7 @@ function UserProfile() {
       <button onClick={handleShowFollowers}>Show Followers</button>
       {showFollowers && (
         <Modal onClose={handleCloseFollowers}>
-          <FollowersList followers={followers} />
+          <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} />
         </Modal>
       )}
       <UserPosts userId={userId} />

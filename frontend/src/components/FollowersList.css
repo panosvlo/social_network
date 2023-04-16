@@ -1,0 +1,9 @@
+.follower-item {
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.follower-item:hover {
+  color: #0056b3;
+}
