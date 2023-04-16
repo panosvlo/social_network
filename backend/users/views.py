@@ -194,6 +194,16 @@ class FollowUserView(generics.UpdateAPIView):
             return JsonResponse({"message": "You cannot follow yourself."}, status=400)
 
 
+class UserFollowersListAPIView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.kwargs['pk']
+        user = get_object_or_404(User, id=user_id)
+        return user.followers.all()
+
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":

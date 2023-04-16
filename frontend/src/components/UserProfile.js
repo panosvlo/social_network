@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import UserPosts from './UserPosts';
 import Followers from './Followers';
 import api from '../services/api';
+import FollowersList from './FollowersList';
+import Modal from './Modal';
 
 function UserProfile() {
   const { userId } = useParams();
+  const [followers, setFollowers] = useState([]);
+  const [showFollowers, setShowFollowers] = useState(false);
 
     const handleFollow = async () => {
       try {
@@ -27,6 +31,30 @@ function UserProfile() {
       }
     };
 
+  const handleShowFollowers = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await api.get(
+        `/users/${userId}/followers/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        setFollowers(response.data);
+        setShowFollowers(true);
+      } else {
+        console.error("Error fetching followers");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleCloseFollowers = () => {
+    setShowFollowers(false);
+  };
+
   return (
     <div>
       <h2>User Profile</h2>
@@ -34,6 +62,12 @@ function UserProfile() {
         {/* Add your user avatar component here */}
       </div>
       <button onClick={handleFollow}>Follow</button>
+      <button onClick={handleShowFollowers}>Show Followers</button>
+      {showFollowers && (
+        <Modal onClose={handleCloseFollowers}>
+          <FollowersList followers={followers} />
+        </Modal>
+      )}
       <UserPosts userId={userId} />
       <Followers />
     </div>
