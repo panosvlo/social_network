@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
@@ -43,7 +44,10 @@ const Feed = () => {
             posts.map((post) => (
               <div key={post.id} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
                 <p>
-                  <strong>{post.user.username}</strong> posted:
+                  {/* Wrap the username in a Link component */}
+                  <strong>
+                    <Link to={`/profile/${post.user.id}`}>{post.user.username}</Link>
+                  </strong> posted:
                 </p>
                 <p>{post.content}</p>
               </div>
