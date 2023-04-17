@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
+import Autosuggest from "react-autosuggest";
 
 const TopicSubscription = () => {
   const [topics, setTopics] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -18,6 +19,38 @@ const TopicSubscription = () => {
 
     fetchTopics();
   }, []);
+
+  const getSuggestions = (value) => {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+
+    return inputLength === 0
+      ? []
+      : topics.filter(
+          (topic) =>
+            topic.name.toLowerCase().slice(0, inputLength) === inputValue
+        );
+  };
+
+  const onSuggestionsFetchRequested = ({ value }) => {
+    setSuggestions(getSuggestions(value));
+  };
+
+  const onSuggestionsClearRequested = () => {
+    setSuggestions([]);
+  };
+
+  const getSuggestionValue = (suggestion) => suggestion.name;
+
+  const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
+
+  const inputProps = {
+    placeholder: "Type a topic",
+    value: selectedTopic,
+    onChange: (_, { newValue }) => {
+      setSelectedTopic(newValue);
+    },
+  };
 
   const handleSubscribe = async () => {
     if (!selectedTopic) {
@@ -49,17 +82,14 @@ const TopicSubscription = () => {
   return (
     <div>
       <h3>Subscribe to a topic</h3>
-      <select
-        value={selectedTopic}
-        onChange={(e) => setSelectedTopic(e.target.value)}
-      >
-        <option value="">Select a topic</option>
-        {topics.map((topic) => (
-          <option key={topic.id} value={topic.name}>
-            {topic.name}
-          </option>
-        ))}
-      </select>
+      <Autosuggest
+        suggestions={suggestions}
+        onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+        onSuggestionsClearRequested={onSuggestionsClearRequested}
+        getSuggestionValue={getSuggestionValue}
+        renderSuggestion={renderSuggestion}
+        inputProps={inputProps}
+      />
       <button onClick={handleSubscribe}>Subscribe</button>
     </div>
   );
