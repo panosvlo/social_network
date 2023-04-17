@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../services/api";
+import './TopicSubscription.css';
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [topic, setTopic] = useState("");
+  const [suggestedTopics, setSuggestedTopics] = useState([]);
+  const [topics, setTopics] = useState([]);
 
   const handleCreatePost = async () => {
     try {
@@ -29,6 +32,39 @@ const CreatePost = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const response = await api.get('/topics/');
+        setTopics(response.data);
+      } catch (error) {
+        console.error('Error fetching topics:', error);
+      }
+    };
+
+    fetchTopics();
+  }, []);
+
+  const handleTopicChange = (e) => {
+    const inputTopic = e.target.value;
+    setTopic(inputTopic);
+
+    if (inputTopic) {
+      setSuggestedTopics(
+        topics.filter((topic) =>
+          topic.name.toLowerCase().startsWith(inputTopic.toLowerCase())
+        )
+      );
+    } else {
+      setSuggestedTopics([]);
+    }
+  };
+
+  const selectSuggestedTopic = (topicName) => {
+    setTopic(topicName);
+    setSuggestedTopics([]);
+  };
+
   return (
     <div>
       <h3>Create a new post</h3>
@@ -37,10 +73,21 @@ const CreatePost = () => {
         <input
           type="text"
           value={topic}
-          onChange={(e) => setTopic(e.target.value)}
+          onChange={handleTopicChange}
           placeholder="Topic..."
         />
       </label>
+      <div className="suggested-topics">
+        {suggestedTopics.map((suggestedTopic) => (
+          <div
+            key={suggestedTopic.id}
+            className="suggested-topic"
+            onClick={() => selectSuggestedTopic(suggestedTopic.name)}
+          >
+            {suggestedTopic.name}
+          </div>
+        ))}
+      </div>
       <br />
       <textarea
         value={content}
