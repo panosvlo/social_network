@@ -122,6 +122,27 @@ function UserProfile() {
     }
   };
 
+  const handleUnsubscribe = async (topicId) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await api.patch(
+        `/users/${userId}/topics/${topicId}/unsubscribe/`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        console.log(response.data.message);
+        setTopics(topics.filter((topic) => topic.id !== topicId));
+      } else {
+        console.error("Error unsubscribing from topic");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleCloseTopics = () => {
     setShowTopics(false);
   };
@@ -157,7 +178,12 @@ function UserProfile() {
       <button onClick={handleShowTopics}>Followed Topics</button>
       {showTopics && (
         <Modal onClose={handleCloseTopics}>
-          <TopicsList topics={topics} handleCloseTopics={handleCloseTopics} title="Topics" />
+          <TopicsList
+            topics={topics}
+            handleCloseTopics={handleCloseTopics}
+            title="Topics"
+            onUnsubscribe={handleUnsubscribe} // Pass the handleUnsubscribe function as a prop
+          />
         </Modal>
       )}
       <UserPosts userId={userId} />

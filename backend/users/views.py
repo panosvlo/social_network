@@ -288,3 +288,19 @@ def get_user_topics(request, user_id):
         return JsonResponse(topics_data, safe=False)
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+def unsubscribe_topic(request, user_id, topic_id):
+    if request.method == 'PATCH':
+        try:
+            user = User.objects.get(pk=user_id)
+            topic = Topic.objects.get(pk=topic_id)
+            user.topics_of_interest.remove(topic)
+            return JsonResponse({"message": "Unsubscribed from topic successfully."}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found."}, status=404)
+        except Topic.DoesNotExist:
+            return JsonResponse({"error": "Topic not found."}, status=404)
+    else:
+        return JsonResponse({"error": "Invalid request method."}, status=400)

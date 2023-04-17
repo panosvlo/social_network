@@ -10,7 +10,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<SignInForm />} />
+        <Route path="/" element={<FeedPage />} />
         <Route path="/signin" element={<SignInForm />} />
         <Route path="/register" element={<RegisterForm />} />
         <Route path="/feed" element={<FeedPage />} />

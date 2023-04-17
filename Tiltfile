@@ -15,3 +15,21 @@ helm_resource(
     port_forwards=['30011:5432'],
     labels=['database']
 )
+
+local_resource(
+  'frontend',
+  cmd='npm start',
+  dir='./frontend/',
+  deps=['./frontend/'],
+  allow_parallel=True,
+  labels=['frontend']
+)
+
+local_resource(
+  'backend',
+  cmd='python manage.py runserver',
+  dir='./backend/',
+  deps=['./backend/'],
+  allow_parallel=True,
+  labels=['backend']
+)

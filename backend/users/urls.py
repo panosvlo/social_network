@@ -24,7 +24,8 @@ from .views import (
     IsFollowingUserView,
     UserFollowersListAPIView,
     UserFollowingListAPIView,
-    get_user_topics
+    get_user_topics,
+    unsubscribe_topic
 )
 
 urlpatterns = [
@@ -53,4 +54,5 @@ urlpatterns = [
     path('users/<int:pk>/followers/', UserFollowersListAPIView.as_view(), name='user-followers-list'),
     path('users/<int:pk>/following/', UserFollowingListAPIView.as_view(), name='user-following-list'),
     path('users/<int:user_id>/topics/', get_user_topics, name='get_user_topics'),
+    path('users/<int:user_id>/topics/<int:topic_id>/unsubscribe/', unsubscribe_topic, name='unsubscribe_topic'),
 ]
