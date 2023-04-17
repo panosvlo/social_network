@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
-import './TopicSubscription.css';
+import Autosuggest from "react-autosuggest";
+import "./TopicSubscription.css";
+import "./CreatePost.css";
 
 const CreatePost = () => {
   const [content, setContent] = useState("");
   const [topic, setTopic] = useState("");
   const [suggestedTopics, setSuggestedTopics] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
 
   const handleCreatePost = async () => {
     try {
@@ -45,19 +48,28 @@ const CreatePost = () => {
     fetchTopics();
   }, []);
 
-  const handleTopicChange = (e) => {
-    const inputTopic = e.target.value;
-    setTopic(inputTopic);
+  const handleTopicChange = (_, { newValue }) => {
+    setTopic(newValue);
+  };
 
-    if (inputTopic) {
-      setSuggestedTopics(
-        topics.filter((topic) =>
-          topic.name.toLowerCase().startsWith(inputTopic.toLowerCase())
-        )
-      );
-    } else {
-      setSuggestedTopics([]);
-    }
+  const getSuggestions = (value) => {
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+
+    return inputLength === 0
+      ? []
+      : topics.filter(
+          (topic) =>
+            topic.name.toLowerCase().slice(0, inputLength) === inputValue
+        );
+  };
+
+
+
+  const inputProps = {
+    placeholder: "Select a topic",
+    value: topic,
+    onChange: handleTopicChange,
   };
 
   const selectSuggestedTopic = (topicName) => {
@@ -65,35 +77,40 @@ const CreatePost = () => {
     setSuggestedTopics([]);
   };
 
+    const onSuggestionsFetchRequested = ({ value }) => {
+      setSuggestions(getSuggestions(value));
+    };
+
+    const onSuggestionsClearRequested = () => {
+      setSuggestions([]);
+    };
+
+    const getSuggestionValue = (suggestion) => suggestion.name;
+
+    const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
+
   return (
     <div>
       <h3>Create a new post</h3>
       <label>
-        Topic:
-        <input
-          type="text"
-          value={topic}
-          onChange={handleTopicChange}
-          placeholder="Topic..."
+        <Autosuggest
+          suggestions={suggestions}
+          onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+          onSuggestionsClearRequested={onSuggestionsClearRequested}
+          getSuggestionValue={getSuggestionValue}
+          renderSuggestion={renderSuggestion}
+          inputProps={inputProps}
         />
       </label>
-      <div className="suggested-topics">
-        {suggestedTopics.map((suggestedTopic) => (
-          <div
-            key={suggestedTopic.id}
-            className="suggested-topic"
-            onClick={() => selectSuggestedTopic(suggestedTopic.name)}
-          >
-            {suggestedTopic.name}
-          </div>
-        ))}
-      </div>
+      {/* Remove the suggested-topics div */}
       <br />
       <textarea
+        className="create-post-textarea"
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write your post..."
       ></textarea>
+      <br />
       <button onClick={handleCreatePost}>Post</button>
     </div>
   );

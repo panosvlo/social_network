@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import Autosuggest from "react-autosuggest";
-import "./TopicSubscription.css"; // Import the new CSS file
+import "./TopicSubscription.css";
 
 const TopicSubscription = () => {
   const [topics, setTopics] = useState([]);
@@ -46,7 +46,7 @@ const TopicSubscription = () => {
   const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
 
   const inputProps = {
-    placeholder: "Type a topic",
+    placeholder: "Select a topic",
     value: selectedTopic,
     onChange: (_, { newValue }) => {
       setSelectedTopic(newValue);

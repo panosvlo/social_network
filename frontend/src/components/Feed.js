@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import api from '../services/api';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import api from "../services/api";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { find as linkifyFind } from "linkifyjs"; // Import the linkify library
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
@@ -10,10 +11,10 @@ const Feed = () => {
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       console.log("Access token:", token);
       if (!token) {
-        navigate('/signin');
+        navigate("/signin");
       } else {
         fetchSubscribedPosts();
       }
@@ -24,13 +25,40 @@ const Feed = () => {
 
   const fetchSubscribedPosts = async () => {
     try {
-      const response = await api.get('/posts/');
+      const response = await api.get("/posts/");
       setPosts(response.data);
       setLoading(false);
     } catch (error) {
       console.error(error);
       setLoading(false);
     }
+  };
+
+  const formatHref = (href, type) => {
+    if (type === "url" && !/^https?:\/\//.test(href)) {
+      return `http://${href}`;
+    }
+    return href;
+  };
+
+  const renderContentWithLinks = (content) => {
+    const links = linkifyFind(content);
+    let lastIndex = 0;
+    const elements = [];
+
+    links.forEach((link, index) => {
+      elements.push(content.slice(lastIndex, link.start));
+      elements.push(
+        <a href={formatHref(link.href, link.type)} key={index} target="_blank" rel="noopener noreferrer">
+          {link.value}
+        </a>
+      );
+      lastIndex = link.end;
+    });
+
+    elements.push(content.slice(lastIndex));
+
+    return elements;
   };
 
   return (
@@ -42,14 +70,15 @@ const Feed = () => {
         <div>
           {posts.length ? (
             posts.map((post) => (
-              <div key={post.id} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
+              <div key={post.id} style={{ border: "1px solid #ccc", padding: "1rem", marginBottom: "1rem" }}>
                 <p>
                   {/* Wrap the username in a Link component */}
                   <strong>
                     <Link to={`/profile/${post.user.id}`}>{post.user.username}</Link>
-                  </strong> posted:
+                  </strong>{" "}
+                  posted:
                 </p>
-                <p>{post.content}</p>
+                <p>{renderContentWithLinks(post.content)}</p>
               </div>
             ))
           ) : (
