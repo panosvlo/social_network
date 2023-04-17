@@ -61,32 +61,31 @@ const Feed = () => {
     return elements;
   };
 
-  return (
-    <div>
-      <h3>Feed</h3>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div>
-          {posts.length ? (
-            posts.map((post) => (
-              <div key={post.id} style={{ border: "1px solid #ccc", padding: "1rem", marginBottom: "1rem" }}>
-                <p>
-                  {/* Wrap the username in a Link component */}
-                  <strong>
-                    <Link to={`/profile/${post.user.id}`}>{post.user.username}</Link>
-                  </strong>{" "}
-                  posted:
-                </p>
-                <p>{renderContentWithLinks(post.content)}</p>
-              </div>
-            ))
-          ) : (
-            <p>You are all caught up!</p>
-          )}
-        </div>
-      )}
-    </div>
+return (
+  <div>
+    <h3>Feed</h3>
+    {loading ? (
+      <p>Loading...</p>
+    ) : (
+      <div>
+        {posts.length ? (
+          posts.map((post) => (
+            <div key={post.id} style={{ border: "1px solid #ccc", padding: "1rem", marginBottom: "1rem" }}>
+              <p>
+                <strong>
+                  <Link to={`/profile/${post.user.id}`}>{post.user.username}</Link>
+                </strong>{" "}
+                posted on {new Date(post.created_at).toLocaleDateString()}:
+              </p>
+              <p>{renderContentWithLinks(post.content)}</p>
+            </div>
+          ))
+        ) : (
+          <p>You are all caught up!</p>
+        )}
+      </div>
+    )}
+  </div>
   );
 };
 
