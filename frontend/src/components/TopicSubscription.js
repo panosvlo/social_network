@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import Autosuggest from "react-autosuggest";
+import "./TopicSubscription.css"; // Import the new CSS file
 
 const TopicSubscription = () => {
   const [topics, setTopics] = useState([]);
