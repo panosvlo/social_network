@@ -1,4 +1,5 @@
 from rest_framework import generics
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -139,7 +140,13 @@ class SubscribeToTopicView(generics.UpdateAPIView):
         if not topic_name:
             return JsonResponse({"error": "Topic name is required."}, status=400)
 
-        topic = get_object_or_404(Topic, name=topic_name)
+        try:
+            topic = Topic.objects.get(name=topic_name)
+        except ObjectDoesNotExist:
+            # If the topic doesn't exist, create it
+            topic = Topic(name=topic_name)
+            topic.save()
+
         user = request.user
         user.topics_of_interest.add(topic)
         user.save()

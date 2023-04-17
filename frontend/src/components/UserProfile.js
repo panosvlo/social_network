@@ -5,6 +5,7 @@ import api from '../services/api';
 import FollowersList from './FollowersList';
 import TopicsList from './TopicsList';
 import Modal from './Modal';
+import { Link } from 'react-router-dom';
 
 function UserProfile() {
   const { userId } = useParams();
@@ -15,10 +16,32 @@ function UserProfile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [topics, setTopics] = useState([]);
   const [showTopics, setShowTopics] = useState(false);
+  const [userDetails, setUserDetails] = useState({});
 
   useEffect(() => {
+    fetchUserDetails();
     checkIsFollowing();
   }, [userId]);
+
+  const fetchUserDetails = async () => { // Add this function
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await api.get(`/users/${userId}/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setUserDetails(response.data);
+      } else {
+        console.error("Error fetching user details");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
 
   const checkIsFollowing = async () => {
     try {
@@ -158,7 +181,8 @@ function UserProfile() {
 
   return (
     <div>
-      <h2>User Profile</h2>
+      <Link to={`/`}>Go to Home Page</Link>
+      <h2>{userDetails.username || 'User Profile'}</h2>
       <div>
         {/* Add your user avatar component here */}
       </div>

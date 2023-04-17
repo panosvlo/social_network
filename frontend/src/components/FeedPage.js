@@ -30,7 +30,6 @@ const FeedPage = () => {
       <div style={{ flex: 1 }}>
         <Avatar />
         {currentUserId && <Link to={`/profile/${currentUserId}`}>Go to User Profile</Link>}
-        <UserPosts />
         <CreatePost />
         <TopicSubscription />
       </div>
