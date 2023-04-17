@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import UserPosts from './UserPosts';
 import api from '../services/api';
 import FollowersList from './FollowersList';
+import TopicsList from './TopicsList';
 import Modal from './Modal';
 
 function UserProfile() {
@@ -12,6 +13,8 @@ function UserProfile() {
   const [following, setFollowing] = useState([]);
   const [showFollowing, setShowFollowing] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [topics, setTopics] = useState([]);
+  const [showTopics, setShowTopics] = useState(false);
 
   useEffect(() => {
     checkIsFollowing();
@@ -99,6 +102,30 @@ function UserProfile() {
       }
     };
 
+  const handleShowTopics = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await api.get(
+        `/users/${userId}/topics/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        setTopics(response.data);
+        setShowTopics(true);
+      } else {
+        console.error("Error fetching topics");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleCloseTopics = () => {
+    setShowTopics(false);
+  };
+
 
   const handleCloseFollowers = () => {
     setShowFollowers(false);
@@ -115,18 +142,24 @@ function UserProfile() {
         {/* Add your user avatar component here */}
       </div>
       <button onClick={handleFollow}>{isFollowing ? 'Unfollow' : 'Follow'}</button>
-      <button onClick={handleShowFollowers}>Show Followers</button>
+      <button onClick={handleShowFollowers}>Followers</button>
       {showFollowers && (
         <Modal onClose={handleCloseFollowers}>
           <FollowersList followers={followers} handleCloseFollowers={handleCloseFollowers} title="Followers" />
         </Modal>
       )}
-      <button onClick={handleShowFollowing}>Show Following</button>
+      <button onClick={handleShowFollowing}>Following</button>
       {showFollowing && (
         <Modal onClose={handleCloseFollowing}>
           <FollowersList followers={following} handleCloseFollowers={handleCloseFollowing} title="Following" />
         </Modal>
         )}
+      <button onClick={handleShowTopics}>Followed Topics</button>
+      {showTopics && (
+        <Modal onClose={handleCloseTopics}>
+          <TopicsList topics={topics} handleCloseTopics={handleCloseTopics} title="Topics" />
+        </Modal>
+      )}
       <UserPosts userId={userId} />
     </div>
   );

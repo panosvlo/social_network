@@ -271,3 +271,20 @@ def subscribed_feed(request):
     posts = Post.objects.filter(topic__in=topics).order_by('-created_at')
     post_list = serializers.serialize('json', posts)
     return JsonResponse(post_list, safe=False)
+
+
+@csrf_exempt
+def get_user_topics(request, user_id):
+    if request.method == 'GET':
+        user = get_object_or_404(User, id=user_id)
+        topics = user.topics_of_interest.all()
+        topics_data = [
+            {
+                "id": topic.id,
+                "name": topic.name
+            }
+            for topic in topics
+        ]
+        return JsonResponse(topics_data, safe=False)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
