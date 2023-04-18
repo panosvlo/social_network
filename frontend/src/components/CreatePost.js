@@ -10,6 +10,9 @@ const CreatePost = () => {
   const [suggestedTopics, setSuggestedTopics] = useState([]);
   const [topics, setTopics] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const [postStatus, setPostStatus] = useState(null);
+
+  const timeoutDuration = 3000;
 
   const handleCreatePost = async () => {
     try {
@@ -26,12 +29,23 @@ const CreatePost = () => {
       if (response.status === 201) {
         setContent("");
         setTopic("");
-        // Refresh the feed or update the state to display the new post
+        setPostStatus("success");
+        setTimeout(() => {
+          setPostStatus(null);
+        }, timeoutDuration);
       } else {
+        setPostStatus("error");
         console.error("Error creating post");
+        setTimeout(() => {
+          setPostStatus(null);
+        }, timeoutDuration);
       }
     } catch (error) {
+      setPostStatus("error");
       console.error(error);
+      setTimeout(() => {
+        setPostStatus(null);
+      }, timeoutDuration);
     }
   };
 
@@ -89,6 +103,22 @@ const CreatePost = () => {
 
     const renderSuggestion = (suggestion) => <div>{suggestion.name}</div>;
 
+  const renderPostStatus = () => {
+    if (postStatus === "success") {
+      return (
+        <div className="post-status success">
+          Post created successfully!
+        </div>
+      );
+    } else if (postStatus === "error") {
+      return (
+        <div className="post-status error">
+          There was an error creating the post. Please try again.
+        </div>
+      );
+    }
+  };
+
   return (
     <div>
       <h3>Create a new post</h3>
@@ -102,7 +132,6 @@ const CreatePost = () => {
           inputProps={inputProps}
         />
       </label>
-      {/* Remove the suggested-topics div */}
       <br />
       <textarea
         className="create-post-textarea"
@@ -112,6 +141,7 @@ const CreatePost = () => {
       ></textarea>
       <br />
       <button onClick={handleCreatePost}>Post</button>
+      {renderPostStatus()}
     </div>
   );
 };

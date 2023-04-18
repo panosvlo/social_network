@@ -8,3 +8,19 @@
   max-width: 200px; /* Adjust the max-width to your preference */
   resize: vertical; /* Allow the user to resize the textarea vertically */
 }
+
+.post-status {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+}
+
+.post-status.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.post-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
