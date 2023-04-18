@@ -25,7 +25,8 @@ from .views import (
     get_user_topics,
     unsubscribe_topic,
     like_post,
-    comment_post
+    comment_post,
+    TopicRetrieveAPIView
 )
 
 urlpatterns = [
@@ -55,4 +56,5 @@ urlpatterns = [
     path('users/<int:user_id>/topics/<int:topic_id>/unsubscribe/', unsubscribe_topic, name='unsubscribe_topic'),
     path("posts/<int:post_id>/like/", like_post, name="like_post"),
     path("posts/<int:post_id>/comment/", comment_post, name="comment_post"),
+    path("topics/<int:pk>/", TopicRetrieveAPIView.as_view(), name="topic-retrieve"),
 ]

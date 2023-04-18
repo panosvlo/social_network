@@ -252,6 +252,11 @@ class UserFollowingListAPIView(generics.ListAPIView):
         return user.following.all()
 
 
+class TopicRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":
