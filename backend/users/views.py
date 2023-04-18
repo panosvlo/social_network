@@ -1,4 +1,5 @@
 from rest_framework import generics
+from rest_framework.permissions import AllowAny
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -34,6 +35,7 @@ from rest_framework import status
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         # Get the raw password from the request data
