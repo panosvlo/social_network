@@ -16,6 +16,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.core import serializers
+from django.db.models import Q
 from .serializers import (
     UserSerializer,
     PostSerializer,
@@ -68,12 +69,23 @@ class PostListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
+        following_users = user.following.all()
         if user.is_authenticated:
             subscribed_topics = user.topics_of_interest.all()
+
+            # Get posts from topics that the user is following
+            posts_from_topics = Post.objects.filter(topic__in=subscribed_topics)
+
+            # Get posts from users that the user is following
+            posts_from_users = Post.objects.filter(user__in=following_users)
+
+            # Combine both querysets and order them by creation date
+            combined_posts = Post.objects.filter(Q(id__in=posts_from_topics) | Q(id__in=posts_from_users)).order_by(
+                '-created_at')
+
             if with_comments:
-                return Post.objects.filter(topic__in=subscribed_topics).prefetch_related('comments__user').order_by(
-                    '-created_at')
-            return Post.objects.filter(topic__in=subscribed_topics).order_by('-created_at')
+                return combined_posts.prefetch_related('comments__user')
+            return combined_posts
         return Post.objects.none()
 
     def perform_create(self, serializer):
