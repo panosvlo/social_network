@@ -21,6 +21,10 @@ class Post(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='posts')
     likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
 
+    @property
+    def comments_count(self):
+        return self.comments.count()
+
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')

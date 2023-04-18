@@ -16,15 +16,26 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'topics_of_interest')
 
 
+class CommentWithUserSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'username', 'content', 'created_at']
+
+
 class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     topic_name = serializers.CharField(write_only=True, required=True)
     topic = serializers.PrimaryKeyRelatedField(read_only=True)
     like_count = serializers.SerializerMethodField()
+    comments = CommentWithUserSerializer(many=True, read_only=True)
+    comments_count = serializers.ReadOnlyField()
 
     class Meta:
         model = Post
-        fields = ('id', 'user', 'content', 'created_at', 'topic', 'topic_name', 'like_count')
+        fields = (
+        'id', 'user', 'content', 'created_at', 'topic', 'topic_name', 'like_count', 'comments', 'comments_count')
 
     def create(self, validated_data):
         topic_name = validated_data.pop('topic_name')

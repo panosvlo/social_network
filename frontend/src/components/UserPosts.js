@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { find as linkifyFind } from "linkifyjs";
 import CommentForm from "./CommentForm";
+import Comment from "./Comment";
 
 function UserPosts({ userId }) {
   const [posts, setPosts] = useState([]);
@@ -93,6 +94,9 @@ function UserPosts({ userId }) {
           );
         }}
         />
+        {post.comments.map((comment) => (
+            <Comment key={comment.id} comment={comment} />
+        ))}
       </div>
     ))}
   </div>

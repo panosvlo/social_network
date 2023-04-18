@@ -22,7 +22,8 @@ from .serializers import (
     ChatSerializer,
     MessageSerializer,
     TopicSerializer,
-    CommentSerializer
+    CommentSerializer,
+    CommentWithUserSerializer
 )
 import json
 
@@ -64,13 +65,21 @@ class PostListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
         if user.is_authenticated:
             subscribed_topics = user.topics_of_interest.all()
+            if with_comments:
+                return Post.objects.filter(topic__in=subscribed_topics).prefetch_related('comments__user').order_by(
+                    '-created_at')
             return Post.objects.filter(topic__in=subscribed_topics).order_by('-created_at')
         return Post.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
+        return PostSerializer
 
 
 class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -169,7 +178,14 @@ class UserPostsListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs['pk']
+        with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
+        if with_comments:
+            return Post.objects.filter(user__id=user_id).prefetch_related('comments__user').order_by('-created_at')
         return Post.objects.filter(user__id=user_id).order_by('-created_at')
+
+    def get_serializer_class(self):
+        with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
+        return PostSerializer
 
 
 class FollowUserView(generics.UpdateAPIView):

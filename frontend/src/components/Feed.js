@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { find as linkifyFind } from "linkifyjs";
 import CommentForm from "./CommentForm";
+import Comment from "./Comment";
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
@@ -26,7 +27,7 @@ const Feed = () => {
 
   const fetchSubscribedPosts = async () => {
     try {
-      const response = await api.get("/posts/");
+      const response = await api.get("/posts/?with_comments=true");
       setPosts(response.data);
       setLoading(false);
     } catch (error) {
@@ -118,6 +119,9 @@ return (
                   );
                 }}
               />
+              {post.comments.map((comment) => (
+                <Comment key={comment.id} comment={comment} />
+              ))}
             </div>
           ))
         ) : (
