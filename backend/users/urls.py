@@ -6,8 +6,6 @@ from .views import (
     TopicListCreateView,
     PostListCreateView,
     PostRetrieveUpdateDestroyView,
-    LikeListCreateView,
-    LikeRetrieveUpdateDestroyView,
     CommentListCreateView,
     CommentRetrieveUpdateDestroyView,
     ChatListCreateView,
@@ -25,7 +23,9 @@ from .views import (
     UserFollowersListAPIView,
     UserFollowingListAPIView,
     get_user_topics,
-    unsubscribe_topic
+    unsubscribe_topic,
+    like_post,
+    comment_post
 )
 
 urlpatterns = [
@@ -34,8 +34,6 @@ urlpatterns = [
     path('topics/', TopicListCreateView.as_view(), name='topic-list-create'),
     path('posts/', PostListCreateView.as_view(), name='post-list-create'),
     path('posts/<int:pk>/', PostRetrieveUpdateDestroyView.as_view(), name='post-retrieve-update-destroy'),
-    path('likes/', LikeListCreateView.as_view(), name='like-list-create'),
-    path('likes/<int:pk>/', LikeRetrieveUpdateDestroyView.as_view(), name='like-retrieve-update-destroy'),
     path('comments/', CommentListCreateView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', CommentRetrieveUpdateDestroyView.as_view(), name='comment-retrieve-update-destroy'),
     path('chats/', ChatListCreateView.as_view(), name='chat-list-create'),
@@ -55,4 +53,6 @@ urlpatterns = [
     path('users/<int:pk>/following/', UserFollowingListAPIView.as_view(), name='user-following-list'),
     path('users/<int:user_id>/topics/', get_user_topics, name='get_user_topics'),
     path('users/<int:user_id>/topics/<int:topic_id>/unsubscribe/', unsubscribe_topic, name='unsubscribe_topic'),
+    path("posts/<int:post_id>/like/", like_post, name="like_post"),
+    path("posts/<int:post_id>/comment/", comment_post, name="comment_post"),
 ]

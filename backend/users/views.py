@@ -1,9 +1,10 @@
 from rest_framework import generics
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, Post, Like, Comment, Chat, Message, Topic
+from .models import User, Post, Comment, Chat, Message, Topic
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -17,11 +18,11 @@ from django.core import serializers
 from .serializers import (
     UserSerializer,
     PostSerializer,
-    LikeSerializer,
     CommentSerializer,
     ChatSerializer,
     MessageSerializer,
     TopicSerializer,
+    CommentSerializer
 )
 import json
 
@@ -75,20 +76,6 @@ class PostListCreateView(generics.ListCreateAPIView):
 class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-
-
-class LikeListCreateView(generics.ListCreateAPIView):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class LikeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
 
 
 class CommentListCreateView(generics.ListCreateAPIView):
@@ -311,3 +298,38 @@ def unsubscribe_topic(request, user_id, topic_id):
             return JsonResponse({"error": "Topic not found."}, status=404)
     else:
         return JsonResponse({"error": "Invalid request method."}, status=400)
+
+
+@api_view(["POST"])
+def like_post(request, post_id):
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        return Response({"error": "Post not found"}, status=404)
+
+    user = request.user
+    if post.likes.filter(id=user.id).exists():
+        post.likes.remove(user)
+        action = "unliked"
+    else:
+        post.likes.add(user)
+        action = "liked"
+
+    return Response({"message": f"Post {action}."}, status=200)
+
+
+@api_view(["POST"])
+def comment_post(request, post_id):
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        return Response({"error": "Post not found"}, status=404)
+
+    user = request.user
+    serializer = CommentSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(post=post, user=user)
+        return Response(serializer.data, status=201)
+    else:
+        return Response(serializer.errors, status=400)
