@@ -6,6 +6,7 @@ import FollowersList from './FollowersList';
 import TopicsList from './TopicsList';
 import Modal from './Modal';
 import { Link } from 'react-router-dom';
+import SignOutLink from './SignOutLink';
 
 function UserProfile() {
   const { userId } = useParams();
@@ -181,7 +182,12 @@ function UserProfile() {
 
   return (
     <div>
-      <Link to={`/`}>Go to Home Page</Link>
+      <div>
+        <Link to={`/`}>Go to Home Page</Link>
+        <div style={{ marginTop: '8px' }}>
+          <SignOutLink to="/">Sign Out</SignOutLink>
+        </div>
+      </div>
       <h2>{userDetails.username || 'User Profile'}</h2>
       <div>
         {/* Add your user avatar component here */}

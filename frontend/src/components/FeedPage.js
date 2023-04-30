@@ -6,13 +6,13 @@ import Feed from './Feed';
 import TopicSubscription from "./TopicSubscription";
 import { Link } from 'react-router-dom';
 import jwt_decode from 'jwt-decode';
+import SignOutLink from './SignOutLink';
 
 
 const FeedPage = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
-    // Get the access token from your authentication system
     const accessToken = localStorage.getItem('access_token');
 
     if (accessToken) {
@@ -29,7 +29,12 @@ const FeedPage = () => {
     <div style={{ display: 'flex' }}>
       <div style={{ flex: 1 }}>
         <Avatar />
-        {currentUserId && <Link to={`/profile/${currentUserId}`}>Go to User Profile</Link>}
+        <div>
+          {currentUserId && <Link to={`/profile/${currentUserId}`}>Go to User Profile</Link>}
+          <div style={{ marginTop: '8px' }}>
+            <SignOutLink to="/">Sign Out</SignOutLink>
+          </div>
+        </div>
         <CreatePost />
         <TopicSubscription />
       </div>
