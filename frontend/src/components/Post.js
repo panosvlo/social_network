@@ -4,10 +4,13 @@ import CommentForm from './CommentForm';
 import Comment from './Comment';
 import { find as linkifyFind } from "linkifyjs";
 import api from "../services/api";
+import jwt_decode from "jwt-decode";
 
 const Post = ({ post, withComments }) => {
-  const [posts, setPosts] = useState([]);
   const [topicName, setTopicName] = useState('');
+  const [likeCount, setLikeCount] = useState(post.like_count);
+  const [liked, setLiked] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchTopicName = async () => {
@@ -20,7 +23,35 @@ const Post = ({ post, withComments }) => {
     };
 
     fetchTopicName();
+    fetchCurrentUserId();
   }, [post.topic]);
+
+  useEffect(() => {
+    if (currentUserId !== null) {
+      checkIfUserLikedPost();
+    }
+  }, [currentUserId]);
+
+  const fetchCurrentUserId = () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (accessToken) {
+      try {
+        const decodedToken = jwt_decode(accessToken);
+        setCurrentUserId(decodedToken.user_id);
+      } catch (error) {
+        console.error("Error decoding JWT:", error);
+      }
+    }
+  };
+
+  const checkIfUserLikedPost = () => {
+    if (post.likes && post.likes.includes(currentUserId)) {
+      setLiked(true);
+    } else {
+      setLiked(false);
+    }
+  };
+
   const renderContentWithLinks = (content) => {
     const links = linkifyFind(content);
     let lastIndex = 0;
@@ -49,12 +80,13 @@ const Post = ({ post, withComments }) => {
       });
 
       if (response.status === 200) {
-        // Update the post's like count in the state
-        setPosts(
-          posts.map((post) =>
-            post.id === postId ? { ...post, like_count: post.like_count + 1 } : post
-          )
-        );
+        // Update the like count and the 'liked' state based on the current state
+        if (liked) {
+          setLikeCount(likeCount - 1);
+        } else {
+          setLikeCount(likeCount + 1);
+        }
+        setLiked(!liked);
       } else {
         console.error("Error liking the post");
       }
@@ -83,9 +115,9 @@ const Post = ({ post, withComments }) => {
       </p>
       <p>{renderContentWithLinks(post.content)}</p>
       <p>
-        <strong>Likes:</strong> {post.like_count} <strong>Comments:</strong> {post.comments_count}
+        <strong>Likes:</strong> {likeCount} <strong>Comments:</strong> {post.comments_count}
       </p>
-      <button onClick={() => handleLike(post.id)}>Like</button>
+      <button onClick={() => handleLike(post.id)}>{liked ? "Unlike" : "Like"}</button>
       {withComments && (
         <>
           <CommentForm
