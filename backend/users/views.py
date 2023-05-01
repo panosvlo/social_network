@@ -271,6 +271,22 @@ class TopicRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = TopicSerializer
 
 
+class TopicPostsListAPIView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        topic_id = self.kwargs['topicId']
+        with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
+        if with_comments:
+            return Post.objects.filter(topic__id=topic_id).prefetch_related('comments__user').order_by('-created_at')
+        return Post.objects.filter(topic__id=topic_id).order_by('-created_at')
+
+    def get_serializer_class(self):
+        with_comments = self.request.query_params.get('with_comments', 'false').lower() == 'true'
+        return PostSerializer
+
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":

@@ -5,24 +5,15 @@ import Comment from './Comment';
 import { find as linkifyFind } from "linkifyjs";
 import api from "../services/api";
 import jwt_decode from "jwt-decode";
+import useTopicName from './useTopicName';
 
 const Post = ({ post, withComments }) => {
-  const [topicName, setTopicName] = useState('');
+  const topicName = useTopicName(post.topic);
   const [likeCount, setLikeCount] = useState(post.like_count);
   const [liked, setLiked] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
-    const fetchTopicName = async () => {
-      try {
-        const response = await api.get(`/topics/${post.topic}/`);
-        setTopicName(response.data.name);
-      } catch (error) {
-        console.error('Error fetching topic name:', error);
-      }
-    };
-
-    fetchTopicName();
     fetchCurrentUserId();
   }, [post.topic]);
 
@@ -111,7 +102,9 @@ const Post = ({ post, withComments }) => {
         posted on {new Date(post.created_at).toLocaleDateString()}:
       </p>
       <p>
-        <span style={{ fontWeight: 'bold' }}>#{topicName}</span>
+        <span style={{ fontWeight: 'bold' }}>
+          <Link to={`/topics/${post.topic}`}>#{topicName}</Link>
+        </span>
       </p>
       <p>{renderContentWithLinks(post.content)}</p>
       <p>
