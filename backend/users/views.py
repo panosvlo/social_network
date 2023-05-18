@@ -60,6 +60,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class TopicListCreateView(generics.ListCreateAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
+    permission_classes = [AllowAny]
 
 
 class PostListCreateView(generics.ListCreateAPIView):
