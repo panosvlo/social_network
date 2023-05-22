@@ -46,3 +46,10 @@ class Message(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='messages')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Article(models.Model):
+    url = models.URLField(max_length=2048)
+    title = models.CharField(max_length=255, default="null")
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='articles')
+    source = models.CharField(max_length=255)

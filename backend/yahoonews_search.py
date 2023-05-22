@@ -42,6 +42,8 @@ def get_the_news(search):
         for card in cards:
             article = get_article(card)
             link = article[-1]
+            title = article[0]
+            print(title)
             if not link in links:
                 links.add(link)
                 print(link)

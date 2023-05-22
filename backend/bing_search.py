@@ -15,6 +15,8 @@ for result in soup.select('.card-with-cluster'):
     snippet = result.select_one('.snippet').text
     source = result.select_one('.source a').text
     date_posted = result.select_one('#algocore span+ span').text
-    print(f'{title}\n{link}\n{source}\n{date_posted}\n{snippet}\n')
+    # print(f'{title}\n{link}\n{source}\n{date_posted}\n{snippet}\n')
+    print(title)
+    print(link)
 
 print(len(soup.select('.card-with-cluster')))
