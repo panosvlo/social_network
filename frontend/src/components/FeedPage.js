@@ -27,7 +27,7 @@ const FeedPage = () => {
   }, []);
   return (
     <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, overflow: 'auto', marginRight: '1px' }}>
         <Avatar />
         <div>
           {currentUserId && <Link to={`/profile/${currentUserId}`}>Go to User Profile</Link>}
@@ -38,7 +38,7 @@ const FeedPage = () => {
         <CreatePost />
         <TopicSubscription />
       </div>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
         <Feed />
       </div>
     </div>
@@ -46,3 +46,10 @@ const FeedPage = () => {
 };
 
 export default FeedPage;
+
+
+
+
+
+
+

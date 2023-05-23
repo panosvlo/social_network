@@ -16,6 +16,23 @@ helm_resource(
     labels=['database']
 )
 
+helm_resource(
+    resource_deps=['bitnami'],
+    name='redis',
+    chart='bitnami/redis',
+    namespace='default',
+    flags=[
+        '--set=image.tag=4.0.10',
+        '--set=master.count=1',
+        '--set=replica.replicaCount=0',
+        '--set=auth.enabled=false',
+        '--set=auth.sentinel=false',
+        '--set=cluster.enabled=standalone',
+    ],
+    port_forwards=['6379:6379'],
+    labels=['redis']
+)
+
 local_resource(
   'frontend',
   cmd='npm start',
@@ -31,5 +48,10 @@ local_resource(
   dir='./backend/',
   deps=['./backend/'],
   allow_parallel=True,
-  labels=['backend']
+  labels=['backend'],
+  resource_deps=['socialnetworkdb'],
 )
+
+
+
+

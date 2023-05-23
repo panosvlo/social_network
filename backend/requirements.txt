@@ -4,3 +4,8 @@ django-allauth
 django-cors-headers
 psycopg2
 djangorestframework-simplejwt
+celery
+redis
+requests
+bs4
+lxml
