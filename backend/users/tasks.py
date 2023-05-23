@@ -1,5 +1,5 @@
 from celery import shared_task
-from django.contrib.auth.models import User
+from .models import User
 import requests
 import random
 import string
@@ -17,18 +17,23 @@ def create_bot_account(topic):
     email = f"{username}@example.com"
     password = generate_password()
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    user.profile.topics_of_interest.add(
-        topic['id'])  # Assuming you have a ManyToManyField 'topics_of_interest' in UserProfile model
-    user.profile.save()
+    # Check if the user already exists
+    user_exists = User.objects.filter(username=username).exists()
 
-    print(f"Created bot account for topic '{topic['name']}' with username '{username}'")
+    if user_exists:
+        print(f"Bot account for topic '{topic['name']}' with username '{username}' already exists. Skipping.")
+    else:
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.topics_of_interest.add(topic['id'])
+        user.save()
+
+        print(f"Created bot account for topic '{topic['name']}' with username '{username}'")
 
 
 @shared_task()
 def create_bots_for_all_topics():
-    response = requests.get(f"{API_BASE_URL}/topics/")
-    print(response)
+    response = requests.get("http://localhost:8000/api/topics/")
+    print(response.json())
     topics = response.json()
 
     print("in the task")
