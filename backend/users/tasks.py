@@ -1,4 +1,4 @@
-from celery import shared_task
+from celery import shared_task, chain
 from .models import User, Post, Article, Topic
 import requests
 import random
@@ -169,7 +169,7 @@ def bot_posts():
 
 
 @shared_task()
-def save_articles_to_database():
+def save_articles_to_database(*args):
     topics = Topic.objects.all()
 
     for topic in topics:
@@ -187,3 +187,19 @@ def save_articles_to_database():
                     print(f"Saved article with URL '{url}' for topic '{topic.name}' from '{search_engine_name}'")
                 else:
                     print(f"Skipped duplicate article with URL '{url}'")
+
+
+@shared_task()
+def delete_all_articles():
+    # Get all articles
+    articles = Article.objects.all()
+
+    # Delete all articles
+    articles.delete()
+
+    print("All articles have been deleted.")
+
+
+@shared_task
+def delete_all_articles_and_search_again():
+    chain(delete_all_articles.s(), save_articles_to_database.s())()

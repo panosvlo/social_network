@@ -61,14 +61,15 @@ local_resource(
   resource_deps=['socialnetworkdb'],
 )
 
-local_resource(
-  'celery_beat',
-  cmd='celery -A social_network beat -l info',
-  dir='./backend/',
-  allow_parallel=True,
-  labels=['backend'],
-  resource_deps=['socialnetworkdb'],
-)
+# The below stays in Pending, needs to be run from the command line
+# local_resource(
+# 'celery_beat',
+# cmd='celery -A social_network beat -l info',
+# dir='./backend/',
+# allow_parallel=True,
+# labels=['backend'],
+# resource_deps=['socialnetworkdb'],
+# )
 
 
 

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -214,6 +215,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     'save_articles_to_database': {
         'task': 'users.tasks.save_articles_to_database',
-        'schedule': timedelta(seconds=43200),
+        'schedule': timedelta(seconds=21600),
+    },
+    'delete_all_articles_and_search_again': {
+        'task': 'users.tasks.delete_all_articles_and_search_again',
+        'schedule': timedelta(seconds=86400),
     },
 }
