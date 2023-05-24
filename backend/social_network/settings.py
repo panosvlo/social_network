@@ -206,6 +206,14 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'create_bots_for_all_topics': {
         'task': 'users.tasks.create_bots_for_all_topics',
-        'schedule': timedelta(seconds=10),  # You can adjust the time period as needed
+        'schedule': timedelta(seconds=60),
+    },
+    'bot_posts': {
+        'task': 'users.tasks.bot_posts',
+        'schedule': timedelta(seconds=3600),
+    },
+    'save_articles_to_database': {
+        'task': 'users.tasks.save_articles_to_database',
+        'schedule': timedelta(seconds=43200),
     },
 }
