@@ -150,7 +150,7 @@ def bot_posts():
 
             # If there is no existing post with the same URL, create a new post
             if existing_post is None:
-                post_content = f'{article.title}\n{article.url}'
+                post_content = f'{article.title}\n (Search source: {article.source}.com news) \n{article.url}'
                 post = Post(user=bot, content=post_content, topic=topic)
                 post.save()
 
@@ -167,8 +167,11 @@ def save_articles_to_database(*args):
     topics = Topic.objects.all()
 
     for topic in topics:
-        for x in range(3):
-            search_function = random.choice(search_functions)
+        temp_search_functions = search_functions.copy()
+        for x in range(2):
+            search_function = random.choice(temp_search_functions)
+            # Remove the selected function to ensure it's not chosen in the next iteration
+            temp_search_functions.remove(search_function)
             article_data = search_function(topic.name)
             search_engine_name = search_function.__name__.replace('_news', '')
 
@@ -182,6 +185,10 @@ def save_articles_to_database(*args):
                         print(f"Saved article with URL '{url}' for topic '{topic.name}' from '{search_engine_name}'")
                     else:
                         print(f"Skipped duplicate article with URL '{url}'")
+
+            # If we have done two iterations, reset the temp_search_functions for the next topic
+            if x == 1:
+                temp_search_functions = search_functions.copy()
 
 
 @shared_task()
