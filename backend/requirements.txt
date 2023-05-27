@@ -13,3 +13,4 @@ gevent==22.10.2 #for celery to work on windows
 transformers
 torch
 nltk
+faker

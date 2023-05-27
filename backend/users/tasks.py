@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 from time import sleep
 import lxml
+from faker import Faker
 
 API_BASE_URL = "http://localhost:8000"
 
@@ -114,6 +115,14 @@ def yahoo_news(search):
     return list(links)
 
 
+def generate_random_bot_name():
+    fake = Faker()
+    name = fake.name()
+    username = name.replace(" ", "")
+
+    return username
+
+
 search_functions = [google_news, bing_news, yahoo_news]
 
 
@@ -205,3 +214,35 @@ def delete_all_articles():
 @shared_task
 def delete_all_articles_and_search_again():
     chain(delete_all_articles.s(), save_articles_to_database.s())()
+
+
+@shared_task()
+def create_random_bots(num_bots=10):
+    # Get all topics
+    topics = Topic.objects.all()
+
+    for _ in range(num_bots):
+        # Generate a random bot name
+        bot_name = generate_random_bot_name()
+
+        # Generate a random email
+        email = f'{bot_name}@example.com'
+
+        # Generate a random password
+        password = bot_name
+
+        # Create the bot account
+        user = User.objects.create_user(username=bot_name, email=email, password=password, is_bot=True)
+
+        # Assign the bot to a random subset of the topics
+        if len(topics) >= 3:
+            num_topics = random.randint(3, len(topics))
+        else:
+            num_topics = random.randint(1, len(topics))
+
+        chosen_topics = random.sample(list(topics), num_topics)
+        user.topics_of_interest.set(chosen_topics)
+
+        user.save()
+
+        print(f"Created bot account with username '{bot_name}'")

@@ -7,6 +7,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     topics_of_interest = models.ManyToManyField('Topic', related_name='interested_users')
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
+    is_bot = models.BooleanField(default=False)
 
 
 class Topic(models.Model):
