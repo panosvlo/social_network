@@ -43,13 +43,17 @@ Since his victory, it has been revealed that he was once issued with a Guinean d
 
 sentences = nltk.tokenize.sent_tokenize(article_text)
 
+first_two_sentences = sentences[:2]
+last_two_sentences = sentences[-2:]
+middle_sentences = sentences[2:-2]
+
 while True:
-    random.shuffle(sentences)
-    shuffled_text = ' '.join(sentences)
+    random.shuffle(middle_sentences)
+    shuffled_text = ' '.join(first_two_sentences + middle_sentences + last_two_sentences)
     tokens = tokenizer.encode(shuffled_text, truncation=False)
     if len(tokens) <= 1024:
         break
-    sentences = sentences[:-1]  # remove the last sentence
+    middle_sentences = middle_sentences[:-1]  # remove the last sentence from the middle section
 
 # Summarize the article
 summary = summarizer(shuffled_text, max_length=300, min_length=30, do_sample=True)
