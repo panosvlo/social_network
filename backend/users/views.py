@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
@@ -63,8 +64,16 @@ class TopicListCreateView(generics.ListCreateAPIView):
     permission_classes = [AllowAny]
 
 
+class PostPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
 class PostListCreateView(generics.ListCreateAPIView):
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
+    pagination_class = PostPagination
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
