@@ -246,3 +246,53 @@ def create_random_bots(num_bots=10):
         user.save()
 
         print(f"Created bot account with username '{bot_name}'")
+
+
+@shared_task()
+def create_post_from_random_bot():
+    # Fetch all bot accounts
+    bots = User.objects.filter(is_bot=True)
+
+    if not bots:
+        print('No bot users found.')
+        return
+
+    # Randomly select a bot
+    bot = random.choice(bots)
+
+    # Fetch topics the bot is interested in
+    topics = bot.topics_of_interest.all()
+
+    if not topics:
+        print(f'Bot user {bot.username} is not following any topics.')
+        return
+
+    # Randomly select a topic
+    topic = random.choice(topics)
+
+    # Fetch articles for the topic
+    articles = Article.objects.filter(topic=topic)
+
+    # If there are no articles for this topic, log it and return
+    if not articles:
+        print(f'No articles found for topic {topic.name}.')
+        return
+
+    # Randomly select an article
+    article = random.choice(articles)
+
+    # Check for existing posts with the same URL
+    existing_post = Post.objects.filter(content=article.url).first()
+
+    # If there is no existing post with the same URL, create a new post
+    if existing_post is None:
+        post_content = f'{article.title}\n (Search source: {article.source}.com news) \n{article.url}'
+        post = Post(user=bot, content=post_content, topic=topic)
+        post.save()
+
+        # Delete the article from the database
+        article.delete()
+
+        print(f"Created post for bot '{bot.username}' with content '{post_content}'")
+    else:
+        print(f"Skipped duplicate post for bot '{bot.username}' with content '{article.url}'")
