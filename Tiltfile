@@ -39,7 +39,8 @@ local_resource(
   dir='./frontend/',
   deps=['./frontend/'],
   allow_parallel=True,
-  labels=['frontend']
+  labels=['frontend'],
+  resource_deps=['socialnetworkdb'],
 )
 
 local_resource(
