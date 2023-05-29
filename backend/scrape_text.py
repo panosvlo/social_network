@@ -8,10 +8,15 @@ def extract_article(soup):
     return '\n'.join(text)
 
 
-url = "https://www.news247.gr/politismos/tina-turner-i-schesi-tis-me-ton-david-bowie-kai-i-nychta-poy-ektoxeythike-i-kariera-tis.10055585.html"
+url = "https://www.bbc.com/news/uk-northern-ireland-65721779"
 response = requests.get(url)
 soup = BeautifulSoup(response.text, 'html.parser')
 
 article_text = extract_article(soup)
 
-print(article_text)
+# Split the text into lines, remove short lines, and then recombine
+lines = article_text.split('\n')
+filtered_lines = [line for line in lines if len(line) > 150]  # Dont include recommendations, advertisements etc
+filtered_text = '\n'.join(filtered_lines)
+
+print(filtered_text)

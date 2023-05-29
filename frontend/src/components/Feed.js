@@ -10,6 +10,7 @@ import Post from './Post';
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);  // Add a state for current page number
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,14 +29,28 @@ const Feed = () => {
 
   const fetchSubscribedPosts = async () => {
     try {
-      const response = await api.get("/posts/?with_comments=true");
-      setPosts(response.data);
+      const response = await api.get(`/posts/?page=${page}&with_comments=true`);
+      // If this is not the first page, we want to append posts instead of replacing them
+      if (page > 1) {
+        setPosts(prevPosts => [...prevPosts, ...response.data.results]);
+      } else {
+        setPosts(response.data.results);
+      }
       setLoading(false);
     } catch (error) {
       console.error(error);
       setLoading(false);
     }
   };
+
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
+  // Call fetchSubscribedPosts whenever the page number changes
+  useEffect(() => {
+    fetchSubscribedPosts();
+  }, [page]);
 
 return (
   <div>
@@ -51,6 +66,7 @@ return (
         ) : (
           <p>You are all caught up!</p>
         )}
+        <button onClick={handleLoadMore}>Load More</button>
       </div>
     )}
   </div>

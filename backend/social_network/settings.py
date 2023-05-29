@@ -62,7 +62,10 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+
 }
 
 ROOT_URLCONF = 'social_network.urls'
@@ -205,20 +208,29 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    'create_bots_for_all_topics': {
-        'task': 'users.tasks.create_bots_for_all_topics',
-        'schedule': timedelta(seconds=60),
-    },
-    'bot_posts': {
-        'task': 'users.tasks.bot_posts',
-        'schedule': timedelta(seconds=3600),
-    },
-    'save_articles_to_database': {
-        'task': 'users.tasks.save_articles_to_database',
-        'schedule': timedelta(seconds=21600),
-    },
-    'delete_all_articles_and_search_again': {
-        'task': 'users.tasks.delete_all_articles_and_search_again',
-        'schedule': timedelta(seconds=86400),
+    # 'create_bots_for_all_topics': {
+    #     'task': 'users.tasks.create_bots_for_all_topics',
+    #     'schedule': timedelta(seconds=6000),
+    # },
+    # 'bot_posts': {
+    #     'task': 'users.tasks.bot_posts',
+    #     'schedule': timedelta(seconds=30000),
+    # },
+    # 'save_articles_to_database': {
+    #     'task': 'users.tasks.save_articles_to_database',
+    #     'schedule': timedelta(seconds=21600),
+    # },
+    # 'delete_all_articles_and_search_again': {
+    #     'task': 'users.tasks.delete_all_articles_and_search_again',
+    #     # 'schedule': timedelta(seconds=86400),
+    #     'schedule': timedelta(seconds=30000),
+    # },
+    # 'create_random_bots': {
+    #     'task': 'users.tasks.create_random_bots',
+    #     'schedule': timedelta(seconds=120),
+    # },
+    'create_post_from_random_bot': {
+        'task': 'users.tasks.create_post_from_random_bot',
+        'schedule': timedelta(seconds=10),
     },
 }

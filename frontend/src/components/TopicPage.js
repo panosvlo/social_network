@@ -10,20 +10,29 @@ import jwt_decode from 'jwt-decode';
 const TopicPage = () => {
   const { topicId } = useParams();
   const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(1); // Page state
   const topicName = useTopicName(topicId);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await api.get(`/topics/${topicId}/posts/`);
-        setPosts(response.data);
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
-    };
-
     fetchPosts();
-  }, [topicId]);
+  }, [topicId, page]); // Fetch posts when topicId or page changes
+
+  const fetchPosts = async () => {
+    try {
+      const response = await api.get(`/topics/${topicId}/posts/?page=${page}`);
+      if (page > 1) {
+        setPosts(prevPosts => [...prevPosts, ...response.data.results]);
+      } else {
+        setPosts(response.data.results);
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
 
   const [currentUserId, setCurrentUserId] = useState(null);
 
@@ -53,9 +62,14 @@ const TopicPage = () => {
         </div>
       </div>
       <h2>Posts for Topic #{topicName}</h2>
-      {posts.map((post) => (
-        <Post key={post.id} post={post} withComments={true} />
-      ))}
+      {posts.length ? (
+        posts.map((post) => (
+          <Post key={post.id} post={post} withComments={true} />
+        ))
+      ) : (
+        <p>No posts yet.</p>
+      )}
+      <button onClick={handleLoadMore}>Load More</button>
     </div>
   );
 };
