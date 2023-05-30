@@ -1,5 +1,5 @@
 from celery import shared_task, chain
-from .models import User, Post, Article, Topic
+from .models import User, Post, Article, Topic, Comment
 import requests
 import random
 import string
@@ -8,6 +8,11 @@ import re
 from time import sleep
 import lxml
 from faker import Faker
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+from datetime import timedelta
+from django.utils import timezone
+from django.db import transaction
 
 API_BASE_URL = "http://localhost:8000"
 
@@ -121,6 +126,67 @@ def generate_random_bot_name():
     username = name.replace(" ", "")
 
     return username
+
+
+def get_article_text(content):
+    def extract_article(soup):
+        text = [p.text for p in soup.find_all('p')]
+        return '\n'.join(text)
+
+    # Extract URL from the content
+    url = re.search(r'(https?://[^\s]+)', content).group(1)
+    print("URL is:" + url)
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    article_text = extract_article(soup)
+    lines = article_text.split('\n')
+    filtered_lines = [line for line in lines if len(line) > 150]
+    filtered_text = '\n'.join(filtered_lines)
+    print("Filtered text is:" + filtered_text)
+    return filtered_text
+
+
+def get_title(content):
+    # Extract title from the content
+    title = content.split('(')[0].strip()
+    return title
+
+
+def generate_comment(article_title, article_text):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    model = GPT2LMHeadModel.from_pretrained('gpt2',
+                                            pad_token_id=tokenizer.eos_token_id)
+
+    model.to(device)
+
+    text = f"""
+    I read the below article.
+    Title: {article_title}
+    The text: {article_text}
+    My comment on the article is:
+    """
+
+    tokens = tokenizer.encode(text, truncation=False)
+    print(text)
+    if len(tokens) <= 1024:
+        print(len(tokens))
+        input_ids = tokenizer.encode(text, return_tensors='pt')
+
+        output = model.generate(input_ids.to(device),
+                                max_length=10000,
+                                num_beams=5,
+                                no_repeat_ngram_size=2,
+                                early_stopping=True)
+        gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
+        print(gpt_output)
+        gpt_output = gpt_output.split("My comment on the article is:")
+        if len(gpt_output) > 1:
+            comment = gpt_output[1].strip()
+            return comment
+    else:
+        return "Could not produce comment, skipping it."
 
 
 search_functions = [google_news, bing_news, yahoo_news]
@@ -296,3 +362,63 @@ def create_post_from_random_bot():
         print(f"Created post for bot '{bot.username}' with content '{post_content}'")
     else:
         print(f"Skipped duplicate post for bot '{bot.username}' with content '{article.url}'")
+
+
+@shared_task()
+def create_comment_from_random_bot():
+    # Set the maximum number of comments
+    max_comments = 5
+    comment_count = 0
+
+    # Fetch all bot accounts
+    bots = User.objects.filter(is_bot=True)
+
+    if not bots:
+        print('No bot users found.')
+        return
+
+    while comment_count < max_comments:
+        # Randomly select a bot
+        bot = random.choice(bots)
+
+        # Fetch topics the bot is interested in
+        topics = bot.topics_of_interest.all()
+
+        if not topics:
+            print(f'Bot user {bot.username} is not following any topics.')
+            continue
+
+        # Randomly select a topic
+        topic = random.choice(topics)
+
+        # Fetch posts for the topic within the last 24 hours
+        one_day_ago = timezone.now() - timedelta(days=1)
+        posts = Post.objects.filter(topic=topic, created_at__gte=one_day_ago)
+
+        # If there are no recent posts for this topic, log it and continue
+        if not posts:
+            print(f'No recent posts found for topic {topic.name}.')
+            continue
+
+        # Loop through the posts until a post without a comment is found
+        for post in posts:
+            with transaction.atomic():
+                # If the post already has a comment, skip it
+                if post.comments.exists():
+                    continue
+
+                # Scrape the article text
+                article_text = get_article_text(post.content)
+
+                # Generate a comment
+                title = get_title(post.content)
+                comment_text = generate_comment(title, article_text)
+
+                # Create the comment
+                Comment.objects.create(user=bot, post=post, content=comment_text)
+
+                print(f"Created comment for bot '{bot.username}' on post '{post.id}'")
+
+                comment_count += 1
+                if comment_count >= max_comments:
+                    return
