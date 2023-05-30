@@ -1,8 +1,13 @@
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
+import torch
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 model = GPT2LMHeadModel.from_pretrained('gpt2',
                                         pad_token_id=tokenizer.eos_token_id)
+
+model.to(device)
 
 article_text = """
 "I will miss absolutely miss this place with a passion," he said, reflecting on an end of an era - not just for the Irish News, but also for the small surrounding area which used to be known as Belfast's Fleet Street.
@@ -16,18 +21,18 @@ Mary Kelly, a journalist who worked at various outlets, including the BBC and Ir
 article_title = "Irish News move marks the end of Belfast's Fleet Street"
 
 text = f"""
-A facebook user posted the below article in his feed.
-Title: {article_title} The text: {article_text}Another Facebook user commented on the post:
+I read the below article.
+Title: {article_title}
+The text: {article_text}
+My comment on the article is:
 """
-
-print(text)
 
 tokens = tokenizer.encode(text, truncation=False)
 print(len(tokens))
 if len(tokens) <= 1024:
     input_ids = tokenizer.encode(text, return_tensors='pt')
 
-    output = model.generate(input_ids,
+    output = model.generate(input_ids.to(device),
                             max_length=10000,
                             num_beams=5,
                             no_repeat_ngram_size=2,
