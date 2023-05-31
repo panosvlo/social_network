@@ -135,14 +135,12 @@ def get_article_text(content):
 
     # Extract URL from the content
     url = re.search(r'(https?://[^\s]+)', content).group(1)
-    print("URL is:" + url)
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     article_text = extract_article(soup)
     lines = article_text.split('\n')
     filtered_lines = [line for line in lines if len(line) > 150]
     filtered_text = '\n'.join(filtered_lines)
-    print("Filtered text is:" + filtered_text)
     return filtered_text
 
 
@@ -164,9 +162,7 @@ def generate_comment(article_title, article_text):
     text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}What I would like to comment on the article is that"""
 
     tokens = tokenizer.encode(text, truncation=False)
-    print(text)
     if len(tokens) <= 1024:
-        print(len(tokens))
         input_ids = tokenizer.encode(text, return_tensors='pt')
 
         output = model.generate(input_ids.to(device),
@@ -190,7 +186,6 @@ search_functions = [google_news, bing_news, yahoo_news]
 @shared_task()
 def create_bots_for_all_topics():
     response = requests.get("http://localhost:8000/api/topics/")
-    print(response.json())
     topics = response.json()
 
     for topic in topics:
@@ -408,6 +403,9 @@ def create_comment_from_random_bot():
                 # Generate a comment
                 title = get_title(post.content)
                 comment_text = generate_comment(title, article_text)
+
+                if comment_text == "Could not produce comment, skipping it.":
+                    continue
 
                 # Create the comment
                 Comment.objects.create(user=bot, post=post, content=comment_text)
