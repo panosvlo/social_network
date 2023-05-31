@@ -161,12 +161,7 @@ def generate_comment(article_title, article_text):
 
     model.to(device)
 
-    text = f"""
-    I read the below article.
-    Title: {article_title}
-    The text: {article_text}
-    My comment on the article is:
-    """
+    text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}What I would like to comment on the article is that"""
 
     tokens = tokenizer.encode(text, truncation=False)
     print(text)
@@ -181,7 +176,7 @@ def generate_comment(article_title, article_text):
                                 early_stopping=True)
         gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
         print(gpt_output)
-        gpt_output = gpt_output.split("My comment on the article is:")
+        gpt_output = gpt_output.split("What I would like to comment on the article is that")
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment

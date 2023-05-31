@@ -55,7 +55,7 @@ local_resource(
 
 local_resource(
   'celery_worker',
-  cmd='celery -A social_network worker -l info -P gevent',
+  cmd='celery -A social_network worker -l info -P gevent -c 1',
   dir='./backend/',
   allow_parallel=True,
   labels=['backend'],
