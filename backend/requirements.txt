@@ -1,16 +1,17 @@
-django
-djangorestframework
-django-allauth
-django-cors-headers
-psycopg2
-djangorestframework-simplejwt
-celery
-redis
-requests
-bs4
-lxml
-gevent==22.10.2 #for celery to work on windows
-transformers
-torch
-nltk
-faker
+django==4.2
+djangorestframework==3.14.0
+django-allauth==0.54.0
+django-cors-headers==3.14.0
+psycopg2==2.9.6
+djangorestframework-simplejwt==5.2.2
+celery==5.2.7
+redis==4.5.4
+requests==2.28.2
+bs4==0.0.1
+lxml==4.9.2
+gevent==22.10.2
+transformers==4.29.2
+torch==2.0.1
+# torch==2.0.1+cu118 # pip install -r .\requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
+nltk==3.8.1
+faker==18.9.0
