@@ -6,6 +6,18 @@ import { find as linkifyFind } from "linkifyjs";
 import api from "../services/api";
 import jwt_decode from "jwt-decode";
 import useTopicName from './useTopicName';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
+
+const customStyles = {
+  content: {
+    width: '500px',  // adjust as needed
+    height: '300px',  // adjust as needed
+    margin: 'auto',
+    position: 'relative',
+  },
+};
 
 const Post = ({ post, withComments }) => {
   const topicName = useTopicName(post.topic);
@@ -93,6 +105,15 @@ const Post = ({ post, withComments }) => {
     return href;
   };
 
+  const [modalIsOpen, setIsOpen] = useState(false);
+
+  const openModal = () => {
+    setIsOpen(true);
+  }
+
+  const closeModal = () => {
+    setIsOpen(false);
+  }
   return (
     <div style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
       <p>
@@ -107,10 +128,32 @@ const Post = ({ post, withComments }) => {
         </span>
       </p>
       <p>{renderContentWithLinks(post.content)}</p>
-      <p>
-        <strong>Likes:</strong> {likeCount} <strong>Comments:</strong> {post.comments_count}
-      </p>
-      <button onClick={() => handleLike(post.id)}>{liked ? "Unlike" : "Like"}</button>
+      <div>
+        <div>
+          <span style={{ cursor: 'pointer' }} onClick={openModal}>
+            <strong>Likes:</strong> {likeCount} <strong>Comments:</strong> {post.comments_count}
+          </span>
+        </div>
+        <div>
+          <button onClick={() => handleLike(post.id)}>{liked ? "Unlike" : "Like"}</button>
+        </div>
+      </div>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Liked By Modal"
+        style={customStyles}
+      >
+        <div style={{ position: 'absolute', right: '10px', top: '10px' }}>
+          <button onClick={closeModal}>X</button>
+        </div>
+        <h2>Liked By</h2>
+        {post.likes.map(user => (
+          <p key={user.id}>
+            <Link to={`/profile/${user.id}`}>{user.username}</Link>
+          </p>
+        ))}
+      </Modal>
       {withComments && (
         <>
           <CommentForm

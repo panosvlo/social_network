@@ -415,3 +415,47 @@ def create_comment_from_random_bot():
                 comment_count += 1
                 if comment_count >= max_comments:
                     return
+
+@shared_task()
+def create_like_from_random_bot():
+    # Fetch all bot accounts
+    bots = User.objects.filter(is_bot=True)
+
+    if not bots:
+        print('No bot users found.')
+        return
+
+    # Randomly select a bot
+    bot = random.choice(bots)
+
+    # Fetch topics the bot is interested in
+    topics = bot.topics_of_interest.all()
+
+    if not topics:
+        print(f'Bot user {bot.username} is not following any topics.')
+        return
+
+    # Randomly select a topic
+    topic = random.choice(topics)
+
+    # Fetch posts for the topic within the last 24 hours
+    one_day_ago = timezone.now() - timedelta(days=2)
+    posts = Post.objects.filter(topic=topic, created_at__gte=one_day_ago)
+
+    # If there are no recent posts for this topic, log it and return
+    if not posts:
+        print(f'No recent posts found for topic {topic.name}.')
+        return
+
+    # Randomly select a post
+    post = random.choice(posts)
+
+    # If the bot already liked this post, skip it
+    if post.likes.filter(pk=bot.pk).exists():
+        print(f"Bot '{bot.username}' already liked post '{post.id}', skipping.")
+        return
+
+    # Add a like from the bot to the post
+    post.likes.add(bot)
+
+    print(f"Bot '{bot.username}' liked post '{post.id}'")

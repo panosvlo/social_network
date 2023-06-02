@@ -96,7 +96,7 @@ function UserProfile() {
         }
       );
       if (response.status === 200) {
-        setFollowers(response.data);
+        setFollowers(response.data.results);
         setShowFollowers(true);
       } else {
         console.error("Error fetching followers");
@@ -106,25 +106,25 @@ function UserProfile() {
     }
   };
 
-    const handleShowFollowing = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await api.get(
-          `/users/${userId}/following/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (response.status === 200) {
-          setFollowing(response.data);
-          setShowFollowing(true);
-        } else {
-          console.error("Error fetching following");
+  const handleShowFollowing = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await api.get(
+        `/users/${userId}/following/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (error) {
-        console.error(error);
+      );
+      if (response.status === 200) {
+        setFollowing(response.data.results);
+        setShowFollowing(true);
+      } else {
+        console.error("Error fetching following");
       }
-    };
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleShowTopics = async () => {
     try {

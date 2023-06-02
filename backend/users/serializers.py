@@ -29,13 +29,15 @@ class PostSerializer(serializers.ModelSerializer):
     topic_name = serializers.CharField(write_only=True, required=True)
     topic = serializers.PrimaryKeyRelatedField(read_only=True)
     like_count = serializers.SerializerMethodField()
+    likes = UserSerializer(many=True, read_only=True)
     comments = CommentWithUserSerializer(many=True, read_only=True)
     comments_count = serializers.ReadOnlyField()
 
     class Meta:
         model = Post
         fields = (
-        'id', 'user', 'content', 'created_at', 'topic', 'topic_name', 'like_count', 'comments', 'comments_count')
+            'id', 'user', 'content', 'created_at', 'topic', 'topic_name', 'like_count', 'comments', 'comments_count',
+            'likes')
 
     def create(self, validated_data):
         topic_name = validated_data.pop('topic_name')
