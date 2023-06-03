@@ -431,17 +431,29 @@ def create_like_from_random_bot():
 
     # Fetch topics the bot is interested in
     topics = bot.topics_of_interest.all()
+    # Fetch users the bot is following
+    followed_users = bot.following.all()
 
-    if not topics:
-        print(f'Bot user {bot.username} is not following any topics.')
+    if not topics and not followed_users:
+        print(f'Bot user {bot.username} is not following any topics or users.')
         return
 
     # Randomly select a topic
     topic = random.choice(topics)
 
     # Fetch posts for the topic within the last 24 hours
-    one_day_ago = timezone.now() - timedelta(days=2)
-    posts = Post.objects.filter(topic=topic, created_at__gte=one_day_ago)
+    one_day_ago = timezone.now() - timedelta(days=1)
+    # Fetch posts for the topics within the last 24 hours
+    topic_posts = Post.objects.filter(topic__in=topics, created_at__gte=one_day_ago)
+
+    # Fetch posts from followed users within the last 24 hours
+    followed_posts = Post.objects.filter(user__in=followed_users, created_at__gte=one_day_ago)
+
+    # Combine querysets
+    posts = topic_posts | followed_posts
+
+    # Remove duplicates, if any
+    posts = posts.distinct()
 
     # If there are no recent posts for this topic, log it and return
     if not posts:
@@ -501,7 +513,6 @@ def bot_follow_users(num_users=100):
 
     # Randomly select users for the bot to follow, up to the maximum
     users_to_follow = random.sample(list(users_not_followed), min(num_users_to_follow, users_not_followed.count()))
-    print(users_to_follow)
     for user in users_to_follow:
         bot.following.add(user)
 
