@@ -416,6 +416,7 @@ def create_comment_from_random_bot():
                 if comment_count >= max_comments:
                     return
 
+
 @shared_task()
 def create_like_from_random_bot():
     # Fetch all bot accounts
@@ -459,3 +460,49 @@ def create_like_from_random_bot():
     post.likes.add(bot)
 
     print(f"Bot '{bot.username}' liked post '{post.id}'")
+
+
+@shared_task()
+def bot_follow_users(num_users=100):
+    # Fetch all bot accounts
+    bots = User.objects.filter(is_bot=True)
+
+    if not bots:
+        print('No bot users found.')
+        return
+
+    # Randomly select a bot
+    bot = random.choice(bots)
+
+    # Fetch all non-bot accounts
+    users = User.objects.filter(is_bot=False)
+
+    if not users:
+        print('No non-bot users found.')
+        return
+
+    # Count the number of users the bot is already following
+    following_count = bot.following.count()
+
+    # If the bot is already following the maximum number of users, log it and return
+    if following_count >= num_users:
+        print(f"Bot '{bot.username}' is already following {following_count} users.")
+        return
+
+    # Calculate the number of users the bot needs to follow
+    num_users_to_follow = 5
+
+    # Filter the non-bot users to only include those not already being followed by the bot
+    users_not_followed = users.exclude(id__in=bot.following.values_list('id', flat=True))
+
+    if not users_not_followed:
+        print(f"Bot '{bot.username}' is already following all non-bot users.")
+        return
+
+    # Randomly select users for the bot to follow, up to the maximum
+    users_to_follow = random.sample(list(users_not_followed), min(num_users_to_follow, users_not_followed.count()))
+    print(users_to_follow)
+    for user in users_to_follow:
+        bot.following.add(user)
+
+        print(f"Bot '{bot.username}' started following '{user.username}'")
