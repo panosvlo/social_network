@@ -2,7 +2,9 @@ import React from 'react';
 
 function TopicsList({ topics, handleCloseTopics, title, onUnsubscribe }) {
   const handleUnsubscribe = (topicId) => {
-    onUnsubscribe(topicId);
+    if (onUnsubscribe) {
+      onUnsubscribe(topicId);
+    }
   };
 
   return (
@@ -12,7 +14,7 @@ function TopicsList({ topics, handleCloseTopics, title, onUnsubscribe }) {
         {topics.map((topic) => (
           <li key={topic.id}>
             {topic.name}
-            <button onClick={() => handleUnsubscribe(topic.id)}>Unsubscribe</button>
+            {onUnsubscribe && <button onClick={() => handleUnsubscribe(topic.id)}>Unsubscribe</button>}
           </li>
         ))}
       </ul>

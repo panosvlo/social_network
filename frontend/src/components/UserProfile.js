@@ -7,6 +7,7 @@ import TopicsList from './TopicsList';
 import Modal from './Modal';
 import { Link } from 'react-router-dom';
 import SignOutLink from './SignOutLink';
+import jwt_decode from "jwt-decode";
 
 function UserProfile() {
   const { userId } = useParams();
@@ -18,10 +19,12 @@ function UserProfile() {
   const [topics, setTopics] = useState([]);
   const [showTopics, setShowTopics] = useState(false);
   const [userDetails, setUserDetails] = useState({});
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     fetchUserDetails();
     checkIsFollowing();
+    fetchCurrentUserId();
   }, [userId]);
 
   const fetchUserDetails = async () => { // Add this function
@@ -180,6 +183,18 @@ function UserProfile() {
     setShowFollowing(false);
   };
 
+  const fetchCurrentUserId = () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (accessToken) {
+      try {
+        const decodedToken = jwt_decode(accessToken);
+        setCurrentUserId(decodedToken.user_id);
+      } catch (error) {
+        console.error("Error decoding JWT:", error);
+      }
+    }
+  };
+
   return (
     <div>
       <div>
@@ -212,7 +227,7 @@ function UserProfile() {
             topics={topics}
             handleCloseTopics={handleCloseTopics}
             title="Topics"
-            onUnsubscribe={handleUnsubscribe} // Pass the handleUnsubscribe function as a prop
+            onUnsubscribe={currentUserId === parseInt(userId) ? handleUnsubscribe : null}
           />
         </Modal>
       )}
