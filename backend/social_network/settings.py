@@ -233,10 +233,10 @@ CELERY_BEAT_SCHEDULE = {
     #     'task': 'users.tasks.create_post_from_random_bot',
     #     'schedule': timedelta(seconds=5),
     # },
-    # 'create_comment_from_random_bot': {
-    #     'task': 'users.tasks.create_comment_from_random_bot',
-    #     'schedule': timedelta(seconds=120),
-    # },
+    'create_comment_from_random_bot': {
+        'task': 'users.tasks.create_comment_from_random_bot',
+        'schedule': timedelta(seconds=120),
+    },
     'create_like_from_random_bot': {
         'task': 'users.tasks.create_like_from_random_bot',
         'schedule': timedelta(seconds=5),

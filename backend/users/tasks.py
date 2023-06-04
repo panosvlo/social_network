@@ -159,7 +159,7 @@ def generate_comment(article_title, article_text):
 
     model.to(device)
 
-    text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}What I would like to comment on the article is that"""
+    text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}\nWhat I would like to comment on the article is that"""
 
     tokens = tokenizer.encode(text, truncation=False)
     if len(tokens) <= 1024:
@@ -373,21 +373,28 @@ def create_comment_from_random_bot():
 
         # Fetch topics the bot is interested in
         topics = bot.topics_of_interest.all()
+        # Fetch users the bot is following
+        followed_users = bot.following.all()
 
-        if not topics:
-            print(f'Bot user {bot.username} is not following any topics.')
+        if not topics and not followed_users:
+            print(f'Bot user {bot.username} is not following any topics or users.')
             continue
 
-        # Randomly select a topic
-        topic = random.choice(topics)
+        # Fetch posts for the topics within the last 24 hours
+        one_day_ago = timezone.now() - timedelta(days=7)
+        topic_posts = Post.objects.filter(topic__in=topics, created_at__gte=one_day_ago)
+        # Fetch posts from followed users within the last 24 hours
+        followed_posts = Post.objects.filter(user__in=followed_users, created_at__gte=one_day_ago)
 
-        # Fetch posts for the topic within the last 24 hours
-        one_day_ago = timezone.now() - timedelta(days=1)
-        posts = Post.objects.filter(topic=topic, created_at__gte=one_day_ago)
+        # Combine querysets
+        posts = topic_posts | followed_posts
+
+        # Remove duplicates, if any
+        posts = posts.distinct()
 
         # If there are no recent posts for this topic, log it and continue
         if not posts:
-            print(f'No recent posts found for topic {topic.name}.')
+            print(f'No recent posts found for topics followed by {bot.username}.')
             continue
 
         # Loop through the posts until a post without a comment is found
