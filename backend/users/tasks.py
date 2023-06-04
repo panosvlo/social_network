@@ -29,9 +29,6 @@ def create_bot_account(topic):
 
     # Check if the user already exists
     user_exists = User.objects.filter(username=username).exists()
-
-    # if user_exists:
-    #     print(f"Bot account for topic '{topic['name']}' with username '{username}' already exists. Skipping.")
     if not user_exists:
         user = User.objects.create_user(username=username, email=email, password=password)
         user.topics_of_interest.add(topic['id'])
@@ -150,7 +147,7 @@ def get_title(content):
     return title
 
 
-def generate_comment(article_title, article_text):
+def generate_article_comment(article_title, article_text):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
@@ -167,12 +164,44 @@ def generate_comment(article_title, article_text):
 
         output = model.generate(input_ids.to(device),
                                 max_length=10000,
-                                num_beams=5,
+                                num_beams=1,
                                 no_repeat_ngram_size=2,
-                                early_stopping=True)
+                                early_stopping=True,
+                                num_return_sequences=1)
         gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
         print(gpt_output)
         gpt_output = gpt_output.split("What I would like to comment on the article is that")
+        if len(gpt_output) > 1:
+            comment = gpt_output[1].strip()
+            return comment
+    else:
+        return "Could not produce comment, skipping it."
+
+
+def generate_self_post_comment(content):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    model = GPT2LMHeadModel.from_pretrained('gpt2',
+                                            pad_token_id=tokenizer.eos_token_id)
+
+    model.to(device)
+
+    text = f"""A user in Facebook made the below post.\n{content}\nAnother user commented on that post:"""
+
+    tokens = tokenizer.encode(text, truncation=False)
+    if len(tokens) <= 1024:
+        input_ids = tokenizer.encode(text, return_tensors='pt')
+
+        output = model.generate(input_ids.to(device),
+                                max_length=10000,
+                                num_beams=1,
+                                no_repeat_ngram_size=2,
+                                early_stopping=True,
+                                num_return_sequences=1)
+        gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
+        print(gpt_output)
+        gpt_output = gpt_output.split("Another user commented on that post:")
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment
@@ -381,7 +410,7 @@ def create_comment_from_random_bot():
             continue
 
         # Fetch posts for the topics within the last 24 hours
-        one_day_ago = timezone.now() - timedelta(days=7)
+        one_day_ago = timezone.now() - timedelta(days=1)
         topic_posts = Post.objects.filter(topic__in=topics, created_at__gte=one_day_ago)
         # Fetch posts from followed users within the last 24 hours
         followed_posts = Post.objects.filter(user__in=followed_users, created_at__gte=one_day_ago)
@@ -394,7 +423,7 @@ def create_comment_from_random_bot():
 
         # If there are no recent posts for this topic, log it and continue
         if not posts:
-            print(f'No recent posts found for topics followed by {bot.username}.')
+            print(f'No recent posts found for topics and users followed by {bot.username}.')
             continue
 
         # Loop through the posts until a post without a comment is found
@@ -404,12 +433,15 @@ def create_comment_from_random_bot():
                 if post.comments.exists():
                     continue
 
-                # Scrape the article text
-                article_text = get_article_text(post.content)
+                if "Search source:" not in post.content:
+                    comment_text = generate_self_post_comment(post.content)
+                else:
+                    # Scrape the article text
+                    article_text = get_article_text(post.content)
 
-                # Generate a comment
-                title = get_title(post.content)
-                comment_text = generate_comment(title, article_text)
+                    # Generate a comment
+                    title = get_title(post.content)
+                    comment_text = generate_article_comment(title, article_text)
 
                 if comment_text == "Could not produce comment, skipping it.":
                     continue

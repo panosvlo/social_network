@@ -11,15 +11,21 @@ const TopicSubscription = () => {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const response = await api.get("/topics/");
-        setTopics(response.data);
+        const response = await api.get('/topics/');
+        if(Array.isArray(response.data.results)) {
+          setTopics(response.data.results);
+        } else {
+          console.error('Received data is not an array:', response.data.results);
+          setTopics([]);
+        }
       } catch (error) {
-        console.error("Error fetching topics:", error);
+        console.error('Error fetching topics:', error);
       }
     };
 
     fetchTopics();
   }, []);
+
 
   const getSuggestions = (value) => {
     const inputValue = value.trim().toLowerCase();

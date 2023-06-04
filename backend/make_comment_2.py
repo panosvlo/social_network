@@ -28,7 +28,7 @@ Kellum said thatâs what sheâd like to see on every empty lot the torna
 article_title = "Four years after tornadoes, Trotwood rebuild faces obstacles"
 
 text = f"""
-I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}What I would like to comment on the article is that
+I just read the below article.\nTitle of the article: \n{article_title}\nThe content of the article: {article_text}\nWhat I would like to comment on the article is that
 """
 
 print(text)
@@ -40,9 +40,10 @@ if len(tokens) <= 1024:
 
     output = model.generate(input_ids.to(device),
                             max_length=10000,
-                            num_beams=5,
+                            num_beams=1,
                             no_repeat_ngram_size=2,
-                            early_stopping=True)
+                            early_stopping=True,
+                            num_return_sequences=1)
 
     print(tokenizer.decode(output[0], skip_special_tokens=True))
 else:
