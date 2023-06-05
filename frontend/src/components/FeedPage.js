@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Avatar from './Avatar';
 import UserPosts from './UserPosts';
 import CreatePost from './CreatePost';
 import Feed from './Feed';
@@ -28,7 +27,6 @@ const FeedPage = () => {
   return (
     <div style={{ display: 'flex' }}>
       <div style={{ flex: 1, overflow: 'auto', marginRight: '1px' }}>
-        <Avatar />
         <div>
           {currentUserId && <Link to={`/profile/${currentUserId}`}>Go to User Profile</Link>}
           <div style={{ marginTop: '8px' }}>
