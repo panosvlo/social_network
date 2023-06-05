@@ -13,6 +13,7 @@ import torch
 from datetime import timedelta
 from django.utils import timezone
 from django.db import transaction
+from random import shuffle
 
 API_BASE_URL = "http://localhost:8000"
 
@@ -390,15 +391,16 @@ def create_comment_from_random_bot():
     comment_count = 0
 
     # Fetch all bot accounts
-    bots = User.objects.filter(is_bot=True)
-
+    bots = list(User.objects.filter(is_bot=True))
     if not bots:
         print('No bot users found.')
         return
 
-    while comment_count < max_comments:
-        # Randomly select a bot
-        bot = random.choice(bots)
+    while comment_count < max_comments and bots:
+        shuffle(bots)  # Shuffle the list of bots
+
+        # Select a bot
+        bot = bots.pop()  # Remove the bot from the list
 
         # Fetch topics the bot is interested in
         topics = bot.topics_of_interest.all()

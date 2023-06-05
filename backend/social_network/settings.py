@@ -235,7 +235,7 @@ CELERY_BEAT_SCHEDULE = {
     # },
     'create_comment_from_random_bot': {
         'task': 'users.tasks.create_comment_from_random_bot',
-        'schedule': timedelta(seconds=120),
+        'schedule': timedelta(seconds=10),
     },
     # 'create_like_from_random_bot': {
     #     'task': 'users.tasks.create_like_from_random_bot',
