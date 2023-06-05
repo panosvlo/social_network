@@ -8,7 +8,7 @@ def extract_article(soup):
     return '\n'.join(text)
 
 
-url = "https://spectrumnews1.com/oh/columbus/news/2023/05/26/four-years-later--one-tornado-damaged-complex-stands-in-the-way-of-recovery"
+url = "https://www.tornosnews.gr/en/greek-news/politics/48941-a-total-of-44-parties-submit-applications-for-june-25-elections-in-greece.html"
 response = requests.get(url)
 soup = BeautifulSoup(response.text, 'html.parser')
 

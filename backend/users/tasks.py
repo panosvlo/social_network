@@ -188,7 +188,14 @@ def generate_self_post_comment(content):
 
     model.to(device)
 
-    text = f"""A user in Facebook made the below post.\n{content}\nAnother user commented on that post:"""
+    # Check if content contains URL
+    url_match = re.search(r'(https?://[^\s]+)', content)
+    if url_match:
+        url = url_match.group(1)
+        article_text = get_article_text(url)
+        text = f"""A user in Facebook made the below post.\n{content}\n\nThe post links to an article that says:\n{article_text}\n\nAnother user commented the below on that post:"""
+    else:
+        text = f"""A user in Facebook made the below post.\n{content}\nAnother user commented the below on that post:"""
 
     tokens = tokenizer.encode(text, truncation=False)
     if len(tokens) <= 1024:
@@ -202,7 +209,7 @@ def generate_self_post_comment(content):
                                 num_return_sequences=1)
         gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
         print(gpt_output)
-        gpt_output = gpt_output.split("Another user commented on that post:")
+        gpt_output = gpt_output.split("Another user commented the below on that post:")
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment
@@ -408,7 +415,6 @@ def create_comment_from_random_bot():
         followed_users = bot.following.all()
 
         if not topics and not followed_users:
-            print(f'Bot user {bot.username} is not following any topics or users.')
             continue
 
         # Fetch posts for the topics within the last 24 hours
@@ -425,7 +431,6 @@ def create_comment_from_random_bot():
 
         # If there are no recent posts for this topic, log it and continue
         if not posts:
-            print(f'No recent posts found for topics and users followed by {bot.username}.')
             continue
 
         # Loop through the posts until a post without a comment is found
