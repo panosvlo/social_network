@@ -1,39 +1,30 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
-import logo from "../logo.png";
 
 const styles = {
-  form: {
-    backgroundColor: "#ffffff",
-    padding: "30px",
-    borderRadius: "8px",
-    maxWidth: "500px",
-    margin: "auto",
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
   },
-  inputGroup: {
-    marginBottom: "20px",
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    width: "300px",
   },
   input: {
-    flex: "1",
-    marginRight: "10px",
-    width: "100%",
-    marginBottom: "10px",
+    marginBottom: "16px",
   },
   button: {
-    backgroundColor: "#007BFF",
-    color: "#ffffff",
-    padding: "8px 16px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
+    marginBottom: "16px",
   },
-  logo: {
-    width: "150px",
-    height: "auto",
-    display: "block",
-    marginBottom: "20px",
-    marginLeft: "auto",
-    marginRight: "auto",
+  signInLink: {
+    textDecoration: "none",
+    color: "#0000ff",
+    alignSelf: "center",
   },
 };
 
@@ -41,6 +32,7 @@ const RegisterForm = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -55,15 +47,15 @@ const RegisterForm = () => {
       alert("User registered successfully!");
     } catch (error) {
       console.error(error);
-      alert("Error registering user.");
+      setError(error.response?.data?.message || "Error registering user.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
-      <img src={logo} alt="Logo" style={styles.logo} />
       <h1>Register</h1>
-      <div style={styles.inputGroup}>
+      <label>
+        Username:
         <input
           type="text"
           placeholder="Username"
@@ -71,6 +63,9 @@ const RegisterForm = () => {
           onChange={(e) => setUsername(e.target.value)}
           style={styles.input}
         />
+      </label>
+      <label>
+        Email:
         <input
           type="email"
           placeholder="Email"
@@ -78,6 +73,9 @@ const RegisterForm = () => {
           onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
         />
+      </label>
+      <label>
+        Password:
         <input
           type="password"
           placeholder="Password"
@@ -85,10 +83,17 @@ const RegisterForm = () => {
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
         />
-      </div>
+      </label>
       <button type="submit" style={styles.button}>
         Register
       </button>
+      {error && <p className="error-message">{error}</p>}
+      <p>
+        Already have an account?{" "}
+        <Link to="/signin" style={styles.signInLink}>
+          Sign In
+        </Link>
+      </p>
     </form>
   );
 };
