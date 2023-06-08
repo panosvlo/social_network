@@ -62,6 +62,7 @@ class TopicListCreateView(generics.ListCreateAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
     permission_classes = [AllowAny]
+    pagination_class = None
 
 
 class PostPagination(PageNumberPagination):
@@ -188,6 +189,7 @@ class FollowingListAPIView(generics.ListAPIView):
 class UserTopicsListAPIView(generics.ListAPIView):
     serializer_class = TopicSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None  # Override the pagination class
 
     def get_queryset(self):
         user = self.request.user

@@ -12,10 +12,10 @@ const TopicSubscription = () => {
     const fetchTopics = async () => {
       try {
         const response = await api.get('/topics/');
-        if(Array.isArray(response.data.results)) {
-          setTopics(response.data.results);
+        if(Array.isArray(response.data)) {
+          setTopics(response.data);
         } else {
-          console.error('Received data is not an array:', response.data.results);
+          console.error('Received data is not an array:', response.data);
           setTopics([]);
         }
       } catch (error) {
