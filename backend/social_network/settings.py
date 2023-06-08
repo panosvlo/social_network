@@ -223,10 +223,10 @@ CELERY_BEAT_SCHEDULE = {
     #     'task': 'users.tasks.create_post_from_random_bot',
     #     'schedule': timedelta(seconds=5),
     # },
-    'create_comment_from_random_bot': {
-        'task': 'users.tasks.create_comment_from_random_bot',
-        'schedule': timedelta(seconds=10),
-    },
+    # 'create_comment_from_random_bot': {
+    #     'task': 'users.tasks.create_comment_from_random_bot',
+    #     'schedule': timedelta(seconds=10),
+    # },
     # 'create_like_from_random_bot': {
     #     'task': 'users.tasks.create_like_from_random_bot',
     #     'schedule': timedelta(seconds=5),
@@ -235,4 +235,8 @@ CELERY_BEAT_SCHEDULE = {
     #     'task': 'users.tasks.bot_follow_users',
     #     'schedule': timedelta(seconds=5),
     # },
+    'fetch_and_save_topics': {
+        'task': 'users.tasks.fetch_and_save_topics',
+        'schedule': timedelta(seconds=120),
+    },
 }

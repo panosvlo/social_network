@@ -563,3 +563,32 @@ def bot_follow_users(num_users=100):
         bot.following.add(user)
 
         print(f"Bot '{bot.username}' started following '{user.username}'")
+
+
+@shared_task
+def fetch_and_save_topics():
+    HEADERS = {
+        "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
+    }
+    COOKIES = {"CONSENT": "YES+cb.20210720-07-p0.en+FX+410"}
+    response = requests.get(
+        "https://news.google.com/home?%5Chl=en-US&hl=en-US", headers=HEADERS, cookies=COOKIES
+    )
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    # Find all elements with 'aria-label' attribute
+    elements = soup.find_all(attrs={"aria-label": True, "class": "brSCsc"})
+
+    # Extract and save the 'aria-label' value to Topic model
+
+    # These topics should be skipped
+    skip_topics = {"Home", "For You", "Following"}
+    for element in elements:
+        topic_name = element['aria-label']
+
+        # Check if topic_name is in skip_topics
+        if topic_name not in skip_topics:
+            topic, created = Topic.objects.get_or_create(name=topic_name)
+            if created:
+                print(f"Created new topic: {topic_name}")
