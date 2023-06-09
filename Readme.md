@@ -31,7 +31,8 @@ dependencies ([backend dependencies overview](http://localhost:10350/r/backend_d
 your internet connection, this may take some time. After that, it will continue with the frontend
 dependencies ([frontend dependencies overview](http://localhost:10350/r/frontend_dependencies/overview)).
 
-**Important Note:** If you are getting the error "WARNING: The script `<python package>` is installed
+**Important Note:** If in the backend dependencies you are getting the error "WARNING: The script `<python package>` is
+installed
 in `<Python scripts location>` which is not on PATH," add the `<Python scripts location>` to your system's PATH
 environment variable.
 
@@ -45,4 +46,4 @@ login by visiting the URL: [localhost:3000/signin](http://localhost:3000/signin)
 
 During the startup of the application for the first time, it will create some topics automatically, so that all the
 other automations (creating bot accounts, making posts, etc.) can run thereafter.
-Subscribing to a topic will also create it if it doesn't exist in the database.
+Subscribing to a topic or making a post with a new topic will also create it if it doesn't exist in the database.
