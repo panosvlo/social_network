@@ -23,7 +23,7 @@ local_resource(
 
 local_resource(
   'backend_dependencies',
-  cmd='cd backend && pip install -r requirements.txt',
+  cmd='cd backend && pip install -r requirements.txt --user',
   labels=['dependencies'],
   deps=['./backend/requirements.txt'],
 )

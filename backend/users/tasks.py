@@ -135,6 +135,8 @@ def get_article_text(content):
     response = requests.get(url)
     if response.status_code != 200:
         print("Response code:", response.status_code)
+        filtered_text = "Article unavailable."
+        return filtered_text
     soup = BeautifulSoup(response.text, 'html.parser')
     article_text = extract_article(soup)
     lines = article_text.split('\n')
@@ -165,7 +167,8 @@ def generate_article_comment(article_title, article_text):
     intro_text = f'I just read the below article.\nTitle of the article: {article_title}\nThe content of the article:'
     intro_tokens = tokenizer.encode(intro_text, return_tensors='pt')
     comment_start_tokens = tokenizer.encode(comment_start, return_tensors='pt')
-    remaining_tokens = 1024 - intro_tokens.shape[1] - comment_start_tokens.shape[1] - 3  # 3 for [TRUNCATED] token and potential end padding
+    remaining_tokens = 1024 - intro_tokens.shape[1] - comment_start_tokens.shape[
+        1] - 3 - 100  # 3 for [TRUNCATED] token and potential end padding
 
     # Truncate the article_text to fit into the remaining tokens
     article_text_tokens = tokenizer.encode(article_text, truncation=True, max_length=remaining_tokens, return_tensors='pt')
@@ -223,7 +226,8 @@ def generate_self_post_comment(content):
     intro_tokens = tokenizer.encode(intro_text, return_tensors='pt')
     comment_start_tokens = tokenizer.encode(comment_start, return_tensors='pt')
 
-    remaining_tokens = 1024 - intro_tokens.shape[1] - comment_start_tokens.shape[1] - 3  # 3 for [TRUNCATED] token and potential end padding
+    remaining_tokens = 1024 - intro_tokens.shape[1] - comment_start_tokens.shape[
+        1] - 3 - 100  # 3 for [TRUNCATED] token and potential end padding
 
     if url_match:
         # Truncate the article_text to fit into the remaining tokens
@@ -488,22 +492,22 @@ def create_comment_from_random_bot():
                 else:
                     # Scrape the article text
                     article_text = get_article_text(post.content)
-
+                    if article_text == "Article unavailable.":
+                        continue
                     # Generate a comment
                     title = get_title(post.content)
                     comment_text = generate_article_comment(title, article_text)
 
-                if comment_text == "Could not produce comment, skipping it.":
-                    continue
+                if comment_text != "Could not produce comment, skipping it.":
 
-                # Create the comment
-                Comment.objects.create(user=bot, post=post, content=comment_text)
+                    # Create the comment
+                    Comment.objects.create(user=bot, post=post, content=comment_text)
 
-                print(f"Created comment for bot '{bot.username}' on post '{post.id}'")
+                    print(f"Created comment for bot '{bot.username}' on post '{post.id}'")
 
-                comment_count += 1
-                if comment_count >= max_comments:
-                    return
+                    comment_count += 1
+                    if comment_count >= max_comments:
+                        return
 
 
 @shared_task()
