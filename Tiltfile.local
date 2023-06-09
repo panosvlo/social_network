@@ -15,6 +15,7 @@ local_resource(
   serve_cmd='cd backend && python manage.py runserver',
   labels=['backend'],
   resource_deps=['socialnetworkdb'],
+  deps=['./backend/'],
 )
 
 local_resource(
@@ -22,6 +23,7 @@ local_resource(
   serve_cmd='cd backend && celery -A social_network worker -l info -P gevent -c 1',
   labels=['backend'],
   resource_deps=['socialnetworkdb'],
+  deps=['./backend/users/tasks.py'],
 )
 
 local_resource(
@@ -29,4 +31,5 @@ local_resource(
   serve_cmd='cd backend && celery -A social_network beat -l info',
   labels=['backend'],
   resource_deps=['socialnetworkdb'],
+  deps=['./backend/social_network/settings.py'],
 )

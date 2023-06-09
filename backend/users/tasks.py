@@ -133,6 +133,7 @@ def get_article_text(content):
 
     # Extract URL from the content
     url = re.search(r'(https?://[^\s]+)', content).group(1)
+    print(url)
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     article_text = extract_article(soup)
@@ -158,7 +159,7 @@ def generate_article_comment(article_title, article_text):
     model.to(device)
 
     text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}\nWhat I would like to comment on the article is that"""
-
+    print(text)
     tokens = tokenizer.encode(text, truncation=False)
     if len(tokens) <= 1024:
         input_ids = tokenizer.encode(text, return_tensors='pt')
@@ -428,6 +429,7 @@ def create_comment_from_random_bot():
 
         # Remove duplicates, if any
         posts = posts.distinct()
+        posts = posts.order_by('?')
 
         # If there are no recent posts for this topic, log it and continue
         if not posts:
