@@ -474,11 +474,13 @@ def create_comment_from_random_bot():
 
         # Remove duplicates, if any
         posts = posts.distinct()
-        posts = posts.order_by('?')
+        posts = list(posts.order_by('?'))
 
-        # If there are no recent posts for this topic, log it and continue
         if not posts:
             continue
+
+        # Flag to check if a comment was made
+        comment_made = False
 
         # Loop through the posts until a post without a comment is found
         for post in posts:
@@ -499,15 +501,18 @@ def create_comment_from_random_bot():
                     comment_text = generate_article_comment(title, article_text)
 
                 if comment_text != "Could not produce comment, skipping it.":
-
                     # Create the comment
                     Comment.objects.create(user=bot, post=post, content=comment_text)
 
                     print(f"Created comment for bot '{bot.username}' on post '{post.id}'")
 
                     comment_count += 1
+                    comment_made = True
+
                     if comment_count >= max_comments:
                         return
+                if not comment_made:
+                    break
 
 
 @shared_task()
