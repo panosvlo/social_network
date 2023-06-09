@@ -135,6 +135,8 @@ def get_article_text(content):
     url = re.search(r'(https?://[^\s]+)', content).group(1)
     print(url)
     response = requests.get(url)
+    if response.status_code != 200:
+        print("Response code:", response.status_code)
     soup = BeautifulSoup(response.text, 'html.parser')
     article_text = extract_article(soup)
     lines = article_text.split('\n')
@@ -159,10 +161,14 @@ def generate_article_comment(article_title, article_text):
     model.to(device)
 
     text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}\nWhat I would like to comment on the article is that"""
-    print(text)
-    tokens = tokenizer.encode(text, truncation=False)
-    if len(tokens) <= 1024:
-        input_ids = tokenizer.encode(text, return_tensors='pt')
+    try:
+        tokens = tokenizer.encode(text, truncation=False)
+        if len(tokens) > 1024:
+            # Truncate the text to fit into the model's limit of 1024 tokens.
+            # Add a [TRUNCATED] token to indicate that the text was shortened.
+            tokens = tokens[:1021] + tokenizer.encode(" [TRUNCATED]")
+
+        input_ids = torch.tensor(tokens).unsqueeze(0).to(device)
 
         output = model.generate(input_ids.to(device),
                                 max_length=10000,
@@ -176,8 +182,10 @@ def generate_article_comment(article_title, article_text):
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment
-    else:
-        return "Could not produce comment, skipping it."
+    except Exception as e:
+        print(e)
+        error = "Could not produce comment, skipping it."
+        return error
 
 
 def generate_self_post_comment(content):
@@ -198,9 +206,14 @@ def generate_self_post_comment(content):
     else:
         text = f"""A user in Facebook made the below post.\n{content}\nAnother user commented the below on that post:"""
 
-    tokens = tokenizer.encode(text, truncation=False)
-    if len(tokens) <= 1024:
-        input_ids = tokenizer.encode(text, return_tensors='pt')
+    try:
+        tokens = tokenizer.encode(text, truncation=False)
+        if len(tokens) > 1024:
+            # Truncate the text to fit into the model's limit of 1024 tokens.
+            # Add a [TRUNCATED] token to indicate that the text was shortened.
+            tokens = tokens[:1021] + tokenizer.encode(" [TRUNCATED]")
+
+        input_ids = torch.tensor(tokens).unsqueeze(0).to(device)
 
         output = model.generate(input_ids.to(device),
                                 max_length=10000,
@@ -214,8 +227,10 @@ def generate_self_post_comment(content):
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment
-    else:
-        return "Could not produce comment, skipping it."
+    except Exception as e:
+        print(e)
+        error = "Could not produce comment, skipping it."
+        return error
 
 
 search_functions = [google_news, bing_news, yahoo_news]
