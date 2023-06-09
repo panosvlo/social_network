@@ -262,6 +262,7 @@ class UnfollowUserView(generics.UpdateAPIView):
 class UserFollowersListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None  # Override the pagination class
 
     def get_queryset(self):
         user_id = self.kwargs['pk']

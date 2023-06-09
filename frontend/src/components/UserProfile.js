@@ -99,7 +99,7 @@ function UserProfile() {
         }
       );
       if (response.status === 200) {
-        setFollowers(response.data.results);
+        setFollowers(response.data);
         setShowFollowers(true);
       } else {
         console.error("Error fetching followers");
