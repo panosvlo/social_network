@@ -1,77 +1,61 @@
-load('ext://helm_resource', 'helm_resource', 'helm_repo')
+docker_compose('docker-compose.yaml')
+# Add labels to Docker services
+dc_resource('redis', labels=["redis"])
+dc_resource('socialnetworkdb', labels=["database"])
 
-# Add PostgreSQL Helm resource (https://artifacthub.io/packages/helm/bitnami/postgresql)
-helm_repo('bitnami', 'https://charts.bitnami.com/bitnami',labels=['helm-charts'])
-helm_resource(
-    resource_deps=['bitnami'],
-    name='socialnetworkdb',
-    chart='bitnami/postgresql',
-    namespace='default',
-    flags=[
-        '--set=image.tag=12.0.0',
-        '--set=auth.enablePostgresUser=true',
-        '--set=auth.postgresPassword=postgres'
-    ],
-    port_forwards=['30011:5432'],
-    labels=['database']
-)
+# Frontend Configuration
 
-helm_resource(
-    resource_deps=['bitnami'],
-    name='redis',
-    chart='bitnami/redis',
-    namespace='default',
-    flags=[
-        '--set=image.tag=4.0.10',
-        '--set=master.count=1',
-        '--set=replica.replicaCount=0',
-        '--set=auth.enabled=false',
-        '--set=auth.sentinel=false',
-        '--set=cluster.enabled=standalone',
-    ],
-    port_forwards=['6379:6379'],
-    labels=['redis']
+local_resource(
+  'frontend_dependencies',
+  serve_cmd='cd frontend && npm install',
+  labels=['dependencies'],
+  deps=['./frontend/'],
 )
 
 local_resource(
   'frontend',
-  cmd='npm start',
-  dir='./frontend/',
-  deps=['./frontend/'],
-  allow_parallel=True,
+  serve_cmd='cd frontend && npm start',
   labels=['frontend'],
+  resource_deps=['backend', 'frontend_dependencies']
+)
+
+# Backend Configuration
+
+local_resource(
+  'backend_dependencies',
+  cmd='cd backend && pip install -r requirements.txt',
+  labels=['dependencies'],
+  deps=['./backend/requirements.txt'],
+)
+
+local_resource(
+  'backend_migrations',
+  cmd='cd backend && python manage.py migrate',
+  labels=['dependencies'],
   resource_deps=['socialnetworkdb'],
+  deps=['./backend/users/migrations/'],
 )
 
 local_resource(
   'backend',
-  cmd='python manage.py runserver',
-  dir='./backend/',
-  deps=['./backend/'],
-  allow_parallel=True,
+  serve_cmd='cd backend && python manage.py runserver',
   labels=['backend'],
-  resource_deps=['socialnetworkdb'],
+  resource_deps=['socialnetworkdb', 'backend_dependencies', 'backend_migrations'],
+  deps=['./backend/'],
 )
 
 local_resource(
   'celery_worker',
-  cmd='celery -A social_network worker -l info -P gevent -c 1',
-  dir='./backend/',
-  allow_parallel=True,
+  serve_cmd='cd backend && celery -A social_network worker -l info -P gevent -c 1',
   labels=['backend'],
-  resource_deps=['socialnetworkdb'],
+  resource_deps=['backend'],
+  deps=['./backend/users/tasks.py'],
 )
 
-# The below stays in Pending, needs to be run from the command line
-# local_resource(
-# 'celery_beat',
-# cmd='celery -A social_network beat -l info',
-# dir='./backend/',
-# allow_parallel=True,
-# labels=['backend'],
-# resource_deps=['socialnetworkdb'],
-# )
-
-
-
-
+local_resource(
+  'celery_scheduler',
+  serve_cmd='cd backend && celery -A social_network beat -l info',
+  labels=['backend'],
+  resource_deps=['backend'],
+  deps=['./backend/social_network/settings.py'],
+)

@@ -15,16 +15,14 @@ from django.utils import timezone
 from django.db import transaction
 from random import shuffle
 
-API_BASE_URL = "http://localhost:8000"
-
 
 def generate_password(length=8):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
 
-def create_bot_account(topic):
-    username = f"{topic['name']}_bot"
+def create_bot_account(topic, id):
+    username = f"{topic}_bot"
     email = f"{username}@example.com"
     password = generate_password()
 
@@ -32,10 +30,10 @@ def create_bot_account(topic):
     user_exists = User.objects.filter(username=username).exists()
     if not user_exists:
         user = User.objects.create_user(username=username, email=email, password=password)
-        user.topics_of_interest.add(topic['id'])
+        user.topics_of_interest.add(id)
         user.save()
 
-        print(f"Created bot account for topic '{topic['name']}' with username '{username}'")
+        print(f"Created bot account for topic '{topic}' with username '{username}'")
 
 
 def google_news(topic):
@@ -160,32 +158,45 @@ def generate_article_comment(article_title, article_text):
 
     model.to(device)
 
-    text = f"""I just read the below article.\nTitle of the article: {article_title}\nThe content of the article: {article_text}\nWhat I would like to comment on the article is that"""
+    comment_start = 'What I would like to comment on the article is that'
+
+    # Limiting the number of tokens for the article_text to ensure the total tokens
+    # (including the introduction and the comment start phrase) fit within the 1024 token limit
+    intro_text = f'I just read the below article.\nTitle of the article: {article_title}\nThe content of the article:'
+    intro_tokens = tokenizer.encode(intro_text, return_tensors='pt')
+    comment_start_tokens = tokenizer.encode(comment_start, return_tensors='pt')
+    remaining_tokens = 1024 - intro_tokens.shape[1] - comment_start_tokens.shape[1] - 3  # 3 for [TRUNCATED] token and potential end padding
+
+    # Truncate the article_text to fit into the remaining tokens
+    article_text_tokens = tokenizer.encode(article_text, truncation=True, max_length=remaining_tokens, return_tensors='pt')
+
+    # Combine all tokens and add the [TRUNCATED] token if necessary
+    tokens = torch.cat([intro_tokens, article_text_tokens, comment_start_tokens], dim=-1)
+    if tokens.shape[1] > 1024:
+        tokens = tokens[:, :1021]  # Truncate to make room for [TRUNCATED] token
+        tokens = torch.cat([tokens, tokenizer.encode(" [TRUNCATED]", return_tensors='pt')], dim=-1)
+
+    input_ids = tokens.to(device)
+
     try:
-        tokens = tokenizer.encode(text, truncation=False)
-        if len(tokens) > 1024:
-            # Truncate the text to fit into the model's limit of 1024 tokens.
-            # Add a [TRUNCATED] token to indicate that the text was shortened.
-            tokens = tokens[:1021] + tokenizer.encode(" [TRUNCATED]")
-
-        input_ids = torch.tensor(tokens).unsqueeze(0).to(device)
-
-        output = model.generate(input_ids.to(device),
-                                max_length=10000,
+        output = model.generate(input_ids,
+                                max_length=1024,  # max_length includes the length of the input_ids
                                 num_beams=1,
                                 no_repeat_ngram_size=2,
                                 early_stopping=True,
                                 num_return_sequences=1)
         gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
         print(gpt_output)
-        gpt_output = gpt_output.split("What I would like to comment on the article is that")
+        gpt_output = gpt_output.split(comment_start)
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment
     except Exception as e:
-        print(e)
+        print("The exception is: " + str(e))
         error = "Could not produce comment, skipping it."
         return error
+
+
 
 
 def generate_self_post_comment(content):
@@ -199,38 +210,54 @@ def generate_self_post_comment(content):
 
     # Check if content contains URL
     url_match = re.search(r'(https?://[^\s]+)', content)
+
+    comment_start = 'Another user commented the below on that post:'
+
     if url_match:
         url = url_match.group(1)
         article_text = get_article_text(url)
-        text = f"""A user in Facebook made the below post.\n{content}\n\nThe post links to an article that says:\n{article_text}\n\nAnother user commented the below on that post:"""
+        intro_text = f'A user in Facebook made the below post.\n{content}\nThe post links to an article that says:'
     else:
-        text = f"""A user in Facebook made the below post.\n{content}\nAnother user commented the below on that post:"""
+        intro_text = f'A user in Facebook made the below post.\n{content}'
+
+    intro_tokens = tokenizer.encode(intro_text, return_tensors='pt')
+    comment_start_tokens = tokenizer.encode(comment_start, return_tensors='pt')
+
+    remaining_tokens = 1024 - intro_tokens.shape[1] - comment_start_tokens.shape[1] - 3  # 3 for [TRUNCATED] token and potential end padding
+
+    if url_match:
+        # Truncate the article_text to fit into the remaining tokens
+        article_text_tokens = tokenizer.encode(article_text, truncation=True, max_length=remaining_tokens, return_tensors='pt')
+
+        # Combine all tokens and add the [TRUNCATED] token if necessary
+        tokens = torch.cat([intro_tokens, article_text_tokens, comment_start_tokens], dim=-1)
+    else:
+        tokens = torch.cat([intro_tokens, comment_start_tokens], dim=-1)
+
+    if tokens.shape[1] > 1024:
+        tokens = tokens[:, :1021]  # Truncate to make room for [TRUNCATED] token
+        tokens = torch.cat([tokens, tokenizer.encode(" [TRUNCATED]", return_tensors='pt')], dim=-1)
+
+    input_ids = tokens.to(device)
 
     try:
-        tokens = tokenizer.encode(text, truncation=False)
-        if len(tokens) > 1024:
-            # Truncate the text to fit into the model's limit of 1024 tokens.
-            # Add a [TRUNCATED] token to indicate that the text was shortened.
-            tokens = tokens[:1021] + tokenizer.encode(" [TRUNCATED]")
-
-        input_ids = torch.tensor(tokens).unsqueeze(0).to(device)
-
-        output = model.generate(input_ids.to(device),
-                                max_length=10000,
+        output = model.generate(input_ids,
+                                max_length=1024,  # max_length includes the length of the input_ids
                                 num_beams=1,
                                 no_repeat_ngram_size=2,
                                 early_stopping=True,
                                 num_return_sequences=1)
         gpt_output = tokenizer.decode(output[0], skip_special_tokens=True)
         print(gpt_output)
-        gpt_output = gpt_output.split("Another user commented the below on that post:")
+        gpt_output = gpt_output.split(comment_start)
         if len(gpt_output) > 1:
             comment = gpt_output[1].strip()
             return comment
     except Exception as e:
-        print(e)
+        print("The exception is: " + str(e))
         error = "Could not produce comment, skipping it."
         return error
+
 
 
 search_functions = [google_news, bing_news, yahoo_news]
@@ -238,11 +265,10 @@ search_functions = [google_news, bing_news, yahoo_news]
 
 @shared_task()
 def create_bots_for_all_topics():
-    response = requests.get("http://localhost:8000/api/topics/")
-    topics = response.json()
+    topics = Topic.objects.all()
 
     for topic in topics:
-        create_bot_account(topic)
+        create_bot_account(topic.name, topic.id)
 
 
 @shared_task()
@@ -550,7 +576,7 @@ def bot_follow_users(num_users=100):
     bot = random.choice(bots)
 
     # Fetch all non-bot accounts
-    users = User.objects.filter(is_bot=False)
+    users = User.objects.all()
 
     if not users:
         print('No non-bot users found.')

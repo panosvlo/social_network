@@ -200,43 +200,43 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     # 'create_bots_for_all_topics': {
     #     'task': 'users.tasks.create_bots_for_all_topics',
-    #     'schedule': timedelta(seconds=6000),
+    #     'schedule': timedelta(seconds=20),
     # },
     # 'bot_posts': {
     #     'task': 'users.tasks.bot_posts',
-    #     'schedule': timedelta(seconds=30000),
+    #     'schedule': timedelta(seconds=30),
     # },
-    # 'save_articles_to_database': {
-    #     'task': 'users.tasks.save_articles_to_database',
-    #     'schedule': timedelta(seconds=21600),
-    # },
-    # 'delete_all_articles_and_search_again': {
-    #     'task': 'users.tasks.delete_all_articles_and_search_again',
-    #     # 'schedule': timedelta(seconds=86400),
-    #     'schedule': timedelta(seconds=30000),
-    # },
-    # 'create_random_bots': {
-    #     'task': 'users.tasks.create_random_bots',
-    #     'schedule': timedelta(seconds=120),
-    # },
-    # 'create_post_from_random_bot': {
-    #     'task': 'users.tasks.create_post_from_random_bot',
-    #     'schedule': timedelta(seconds=5),
-    # },
-    # 'create_comment_from_random_bot': {
-    #     'task': 'users.tasks.create_comment_from_random_bot',
-    #     'schedule': timedelta(seconds=10),
-    # },
-    # 'create_like_from_random_bot': {
-    #     'task': 'users.tasks.create_like_from_random_bot',
-    #     'schedule': timedelta(seconds=5),
-    # },
-    # 'bot_follow_users': {
-    #     'task': 'users.tasks.bot_follow_users',
-    #     'schedule': timedelta(seconds=5),
-    # },
-    'fetch_and_save_topics': {
-        'task': 'users.tasks.fetch_and_save_topics',
+    'save_articles_to_database': {
+        'task': 'users.tasks.save_articles_to_database',
+        'schedule': timedelta(seconds=180),
+    },
+    'delete_all_articles_and_search_again': {
+        'task': 'users.tasks.delete_all_articles_and_search_again',
+        # 'schedule': timedelta(seconds=86400),
+        'schedule': timedelta(seconds=300),
+    },
+    'create_random_bots': {
+        'task': 'users.tasks.create_random_bots',
         'schedule': timedelta(seconds=120),
     },
+    'create_post_from_random_bot': {
+        'task': 'users.tasks.create_post_from_random_bot',
+        'schedule': timedelta(seconds=20),
+    },
+    'create_comment_from_random_bot': {
+        'task': 'users.tasks.create_comment_from_random_bot',
+        'schedule': timedelta(seconds=60),
+    },
+    'create_like_from_random_bot': {
+        'task': 'users.tasks.create_like_from_random_bot',
+        'schedule': timedelta(seconds=5),
+    },
+    'bot_follow_users': {
+        'task': 'users.tasks.bot_follow_users',
+        'schedule': timedelta(seconds=20),
+    },
+    # 'fetch_and_save_topics': {
+    #     'task': 'users.tasks.fetch_and_save_topics',
+    #     'schedule': timedelta(seconds=30),
+    # },
 }
