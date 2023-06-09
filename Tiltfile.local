@@ -1,56 +1,32 @@
-local_resource(
-    'socialnetworkdb',
-    cmd='docker run -d --name socialnetworkdb -e POSTGRES_PASSWORD=postgres -p 30011:5432 postgres:12.0',
-    labels=['database'],
-)
-
-local_resource(
-    'redis',
-    cmd='docker run -d --name redis -p 6379:6379 redis:4.0.10',
-    labels=['redis'],
-)
-
-# Django dependencies
-local_resource(
-  'django_dependencies',
-  cmd='pip install -r requirements.txt',
-  dir='./backend/',
-  deps=['./backend/requirements.txt'],
-)
-
-# React dependencies
-local_resource(
-  'react_dependencies',
-  cmd='npm install',
-  dir='./frontend/',
-  deps=['./frontend/package.json', './frontend/package-lock.json'],
-)
+docker_compose('docker-compose.yaml')
+# Add labels to Docker services
+dc_resource('redis', labels=["redis"])
+dc_resource('socialnetworkdb', labels=["database"])
 
 local_resource(
   'frontend',
-  cmd='npm start',
-  dir='./frontend/',
-  deps=['./frontend/'],
-  allow_parallel=True,
+  serve_cmd='cd frontend && npm start',
   labels=['frontend'],
-  resource_deps=['socialnetworkdb', 'react_dependencies'],
+  resource_deps=['socialnetworkdb'],
 )
 
 local_resource(
   'backend',
-  cmd='python manage.py runserver',
-  dir='./backend/',
-  deps=['./backend/'],
-  allow_parallel=True,
+  serve_cmd='cd backend && python manage.py runserver',
   labels=['backend'],
-  resource_deps=['socialnetworkdb', 'django_dependencies'],
+  resource_deps=['socialnetworkdb'],
 )
 
 local_resource(
   'celery_worker',
-  cmd='celery -A social_network worker -l info -P gevent -c 1',
-  dir='./backend/',
-  allow_parallel=True,
+  serve_cmd='cd backend && celery -A social_network worker -l info -P gevent -c 1',
   labels=['backend'],
-  resource_deps=['socialnetworkdb', 'django_dependencies'],
+  resource_deps=['socialnetworkdb'],
+)
+
+local_resource(
+  'celery_scheduler',
+  serve_cmd='cd backend && celery -A social_network beat -l info',
+  labels=['backend'],
+  resource_deps=['socialnetworkdb'],
 )
