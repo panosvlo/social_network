@@ -119,7 +119,7 @@ function UserProfile() {
         }
       );
       if (response.status === 200) {
-        setFollowing(response.data.results);
+        setFollowing(response.data);
         setShowFollowing(true);
       } else {
         console.error("Error fetching following");

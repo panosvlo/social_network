@@ -178,6 +178,7 @@ class SubscribeToTopicView(generics.UpdateAPIView):
 class FollowingListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None  # Override the pagination class
 
     def get_queryset(self):
         user = self.request.user
@@ -271,6 +272,7 @@ class UserFollowersListAPIView(generics.ListAPIView):
 class UserFollowingListAPIView(generics.ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None  # Override the pagination class
 
     def get_queryset(self):
         user_id = self.kwargs['pk']
